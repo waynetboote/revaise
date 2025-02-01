@@ -1,6 +1,27 @@
 # youtube_transcript.py
 import re
+import requests
 from youtube_transcript_api import YouTubeTranscriptApi
+
+# --- Monkey-patch requests.get to include a custom User-Agent ---
+_old_get = requests.get
+
+def custom_get(*args, **kwargs):
+    # Ensure we have a headers dictionary
+    headers = kwargs.get('headers', {})
+    # Set a default User-Agent if one isn’t already provided
+    if 'User-Agent' not in headers:
+        headers['User-Agent'] = (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) "
+            "Chrome/90.0.4430.93 Safari/537.36"
+        )
+    kwargs['headers'] = headers
+    return _old_get(*args, **kwargs)
+
+# Apply the monkey-patch
+requests.get = custom_get
+# ------------------------------------------------------------
 
 def extract_video_id(youtube_url):
     """
@@ -28,15 +49,7 @@ def get_transcript(youtube_url):
         return "Error: Invalid YouTube URL."
     
     try:
-        # Set a custom User-Agent header. This makes the request appear as if it is coming from a typical browser.
-        headers = {
-            "User-Agent": (
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                "AppleWebKit/537.36 (KHTML, like Gecko) "
-                "Chrome/90.0.4430.93 Safari/537.36"
-            )
-        }
-        transcript_entries = YouTubeTranscriptApi.get_transcript(video_id, headers=headers)
+        transcript_entries = YouTubeTranscriptApi.get_transcript(video_id)
         transcript_text = " ".join(entry["text"] for entry in transcript_entries)
         return transcript_text
     except Exception as e:
