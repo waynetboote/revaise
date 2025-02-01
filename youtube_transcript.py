@@ -15,10 +15,11 @@ def extract_video_id(youtube_url):
     return None  # Return None if no valid video ID is found
 
 def download_chromium():
-    """Downloads and extracts a portable version of Chromium and ChromeDriver if not already installed."""
-    chrome_path = "/tmp/chrome-linux/chrome"
+    """Downloads and extracts a stable version of Chromium and ChromeDriver if not already installed."""
+    chrome_path = "/tmp/chrome-linux/usr/bin/google-chrome"
     driver_path = "/tmp/chromedriver"
 
+    # Install Chromium if not already installed
     if not os.path.exists(chrome_path):
         print("Downloading Chromium...")
         os.makedirs("/tmp/chrome-linux", exist_ok=True)
@@ -26,12 +27,13 @@ def download_chromium():
             "wget",
             "-q",
             "-O",
-            "/tmp/chromium.zip",
-            "https://storage.googleapis.com/chromium-browser-snapshots/Linux_x64/1036823/chrome-linux.zip"
+            "/tmp/chromium.deb",
+            "https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb"
         ])
-        subprocess.run(["unzip", "/tmp/chromium.zip", "-d", "/tmp/chrome-linux"])
+        subprocess.run(["dpkg", "-x", "/tmp/chromium.deb", "/tmp/chrome-linux"])
         print("Chromium installed successfully!")
 
+    # Install ChromeDriver if not already installed
     if not os.path.exists(driver_path):
         print("Downloading ChromeDriver...")
         subprocess.run([
@@ -39,7 +41,7 @@ def download_chromium():
             "-q",
             "-O",
             "/tmp/chromedriver.zip",
-            "https://storage.googleapis.com/chromium-browser-snapshots/Linux_x64/1036823/chromedriver_linux64.zip"
+            "https://chromedriver.storage.googleapis.com/114.0.5735.90/chromedriver_linux64.zip"
         ])
         subprocess.run(["unzip", "/tmp/chromedriver.zip", "-d", "/tmp/"])
         subprocess.run(["chmod", "+x", "/tmp/chromedriver"])
