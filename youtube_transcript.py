@@ -15,11 +15,11 @@ def extract_video_id(youtube_url):
     return None  # Return None if no valid video ID is found
 
 def download_chromium():
-    """Downloads and extracts a stable version of Chromium and ChromeDriver if not already installed."""
-    chrome_path = "/tmp/chrome-linux/usr/bin/google-chrome"
+    """Downloads and installs Chromium and ChromeDriver if not already present."""
+    chrome_path = "/tmp/chrome-linux/chrome"
     driver_path = "/tmp/chromedriver"
 
-    # Install Chromium if not already installed
+    # Download Chromium if not installed
     if not os.path.exists(chrome_path):
         print("Downloading Chromium...")
         os.makedirs("/tmp/chrome-linux", exist_ok=True)
@@ -27,13 +27,13 @@ def download_chromium():
             "wget",
             "-q",
             "-O",
-            "/tmp/chromium.deb",
-            "https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb"
+            "/tmp/chromium.AppImage",
+            "https://github.com/AppImage/appimage.github.io/releases/download/latest/Chromium-x86_64.AppImage"
         ])
-        subprocess.run(["dpkg", "-x", "/tmp/chromium.deb", "/tmp/chrome-linux"])
+        subprocess.run(["chmod", "+x", "/tmp/chromium.AppImage"])
         print("Chromium installed successfully!")
 
-    # Install ChromeDriver if not already installed
+    # Download ChromeDriver if not installed
     if not os.path.exists(driver_path):
         print("Downloading ChromeDriver...")
         subprocess.run([
@@ -47,7 +47,7 @@ def download_chromium():
         subprocess.run(["chmod", "+x", "/tmp/chromedriver"])
         print("ChromeDriver installed successfully!")
 
-    return chrome_path, driver_path
+    return "/tmp/chromium.AppImage", driver_path
 
 def get_transcript(youtube_url):
     """Uses Selenium to extract YouTube subtitles (bypasses API restrictions)."""
