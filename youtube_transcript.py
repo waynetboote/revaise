@@ -26,10 +26,10 @@ def download_chromium():
             "wget",
             "-q",
             "-O",
-            "/tmp/chromium.tar.xz",
-            "https://download-chromium.appspot.com/dl/Linux_x64?type=snapshots"
+            "/tmp/chromium.zip",
+            "https://storage.googleapis.com/chromium-browser-snapshots/Linux_x64/1036823/chrome-linux.zip"
         ])
-        subprocess.run(["tar", "-xf", "/tmp/chromium.tar.xz", "-C", "/tmp/chrome-linux"])
+        subprocess.run(["unzip", "/tmp/chromium.zip", "-d", "/tmp/chrome-linux"])
         print("Chromium installed successfully!")
 
     if not os.path.exists(driver_path):
@@ -39,7 +39,7 @@ def download_chromium():
             "-q",
             "-O",
             "/tmp/chromedriver.zip",
-            "https://chromedriver.storage.googleapis.com/114.0.5735.90/chromedriver_linux64.zip"
+            "https://storage.googleapis.com/chromium-browser-snapshots/Linux_x64/1036823/chromedriver_linux64.zip"
         ])
         subprocess.run(["unzip", "/tmp/chromedriver.zip", "-d", "/tmp/"])
         subprocess.run(["chmod", "+x", "/tmp/chromedriver"])
