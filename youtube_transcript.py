@@ -1,8 +1,9 @@
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
-import os
+from webdriver_manager.chrome import ChromeDriverManager
 import re
+import os
 
 def extract_video_id(youtube_url):
     """Extracts the YouTube Video ID from different URL formats."""
@@ -13,18 +14,21 @@ def extract_video_id(youtube_url):
     return None  # Return None if no valid video ID is found
 
 def get_transcript(youtube_url):
-    """Uses Selenium to extract YouTube subtitles (bypasses API restrictions)."""
+    """Uses Selenium to extract YouTube subtitles."""
     video_id = extract_video_id(youtube_url)
 
     if not video_id:
         return "Error: Invalid YouTube URL. Please enter a correct YouTube link."
 
     try:
-        # **Correct Chrome binary path for Render**
-        chrome_binary_path = "/usr/bin/chromium-browser"
-        chromedriver_path = "/usr/bin/chromedriver"
+        # **Ensure Chrome is correctly installed on Render**
+        chrome_binary_path = "/usr/bin/chromium-browser"  # Correct path
+        os.environ["CHROME_BIN"] = chrome_binary_path  # Ensure Selenium can find it
 
-        # Configure Selenium with Chromium
+        # **Manually install the correct ChromeDriver**
+        service = Service(ChromeDriverManager().install())
+
+        # Configure Selenium with Chrome
         options = Options()
         options.binary_location = chrome_binary_path
         options.add_argument("--headless")  # Run in background (no GUI)
@@ -32,14 +36,11 @@ def get_transcript(youtube_url):
         options.add_argument("--no-sandbox")
         options.add_argument("--disable-dev-shm-usage")
 
-        driver = webdriver.Chrome(service=Service(chromedriver_path), options=options)
+        driver = webdriver.Chrome(service=service, options=options)
 
         # Open YouTube video
         video_url = f"https://www.youtube.com/watch?v={video_id}"
         driver.get(video_url)
-
-        # Wait for captions to load
-        driver.implicitly_wait(5)
 
         # Extract transcript text
         transcript_text = ""
