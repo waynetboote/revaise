@@ -15,6 +15,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # ✅ Manually fetch & install the correct ChromeDriver version
+RUN apt-get update && apt-get install -y jq
 RUN CHROMIUM_VERSION=$(chromium --version | awk '{print $2}') && \
     CHROMEDRIVER_VERSION=$(curl -s "https://googlechromelabs.github.io/chrome-for-testing/known-good-versions-with-downloads.json" \
         | jq -r --arg CHROMIUM_VERSION "$CHROMIUM_VERSION" '.versions[] | select(.version == $CHROMIUM_VERSION) | .downloads.chromedriver[] | select(.platform == "linux64") | .url') && \
