@@ -2,8 +2,8 @@ from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
-import re
 import os
+import re
 
 def extract_video_id(youtube_url):
     """Extracts the YouTube Video ID from different URL formats."""
@@ -21,12 +21,15 @@ def get_transcript(youtube_url):
         return "Error: Invalid YouTube URL. Please enter a correct YouTube link."
 
     try:
-        # **Ensure Chrome is correctly installed on Render**
-        chrome_binary_path = "/usr/bin/chromium-browser"  # Correct path
-        os.environ["CHROME_BIN"] = chrome_binary_path  # Ensure Selenium can find it
+        # **Force Selenium to use system-installed Chrome**
+        chrome_binary_path = "/usr/bin/chromium-browser"
+        chromedriver_path = "/usr/bin/chromedriver"
 
-        # **Manually install the correct ChromeDriver**
-        service = Service(ChromeDriverManager().install())
+        os.environ["CHROME_BIN"] = chrome_binary_path
+        os.environ["CHROMEDRIVER_PATH"] = chromedriver_path  # Ensure it's accessible
+
+        # **Explicitly specify the ChromeDriver location**
+        service = Service(chromedriver_path)
 
         # Configure Selenium with Chrome
         options = Options()
