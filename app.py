@@ -5,6 +5,8 @@ from summarization import summarize_text
 from ppt_generator import create_pptx
 from google_slides_creator import create_google_slides
 import logging
+import os
+import openai
 
 app = Flask(__name__)
 logging.basicConfig(level=logging.DEBUG)
@@ -46,6 +48,47 @@ def generate_summary():
         "google_slides_link": slides_link
     }
     return jsonify(response)
+
+# Configure the OpenAI API key
+openai.api_key = os.environ.get("OPENAI_API_KEY")
+
+@app.route('/convert_text', methods=['POST'])
+def convert_text():
+    data = request.get_json()
+    input_text = data.get("input_text")
+    year_group = data.get("year_group")
+    
+    if not input_text or not year_group:
+        app.logger.error("Missing input text or year group")
+        return jsonify({"error": "Missing input text or year group"}), 400
+
+    # Construct a prompt for ChatGPT
+    prompt = (
+        f"Adapt the following text to be appropriate for {year_group}. "
+        "Ensure that the vocabulary, sentence structure, and style are suitable for the reading level typically expected at that year group. "
+        f"Text: {input_text}"
+    )
+
+    try:
+        # Use ChatGPT via OpenAI's ChatCompletion API
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You are a helpful assistant that specializes in adapting text for different reading levels."
+                },
+                {"role": "user", "content": prompt},
+            ],
+            temperature=0.7,
+        )
+        converted_text = response.choices[0].message["content"].strip()
+        app.logger.debug("Text conversion successful")
+        return jsonify({"converted_text": converted_text})
+    except Exception as e:
+        app.logger.error("Error during text conversion: %s", str(e))
+        return jsonify({"error": str(e)}), 500
+
 
 if __name__ == "__main__":
     # For development only; disable debug mode in production.
