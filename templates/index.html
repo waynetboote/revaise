@@ -9,7 +9,7 @@
 <body>
   <div class="container">
     <h1>RevAIse - Convert YouTube to Slides</h1>
-    <!-- Add an ID to your form for easier selection -->
+    <!-- Remove the action attribute so that the form doesn't submit normally -->
     <form id="summaryForm">
       <input type="text" name="youtube_url" placeholder="Enter YouTube URL" required>
       <button type="submit">Generate Slides</button>
@@ -19,16 +19,20 @@
     {% endif %}
   </div>
 
-  <!-- JavaScript code to handle the form submission -->
+  <!-- JavaScript code to handle form submission as JSON -->
   <script>
-    // Wait until the DOM is fully loaded
+    // Log to confirm that the script loads
+    console.log("Script loaded");
+
     document.getElementById('summaryForm').addEventListener('submit', function(event) {
-      event.preventDefault(); // Prevent the default form submission behavior
+      event.preventDefault(); // Prevent the form from doing a full-page submission
+      console.log("Form submission intercepted.");
 
-      // Retrieve the value of the YouTube URL from the form
+      // Get the YouTube URL from the form input
       const youtubeUrl = event.target.youtube_url.value;
+      console.log("YouTube URL:", youtubeUrl);
 
-      // Send a POST request with JSON data to the '/generate_summary' endpoint
+      // Send the POST request as JSON
       fetch('/generate_summary', {
         method: 'POST',
         headers: {
@@ -37,17 +41,15 @@
         body: JSON.stringify({ youtube_url: youtubeUrl })
       })
       .then(response => {
-        // Check if the response is OK (status code in the range 200-299)
+        console.log("Fetch response:", response);
         if (!response.ok) {
           throw new Error('Network response was not OK');
         }
         return response.json();
       })
       .then(data => {
-        // Process the JSON response here
-        console.log('Success:', data);
-        // For example, you could display the summary or other results on the page.
-        // You might add code to update the DOM with the received data.
+        console.log("Data received:", data);
+        // You can update the page with data here
       })
       .catch(error => {
         console.error('Error:', error);
