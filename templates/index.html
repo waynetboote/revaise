@@ -1,21 +1,58 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RevAIse - YouTube to Slides</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RevAIse - YouTube to Slides</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
-    <div class="container">
-        <h1>RevAIse - Convert YouTube to Slides</h1>
-        <form action="/generate_summary" method="POST">
-            <input type="text" name="youtube_url" placeholder="Enter YouTube URL" required>
-            <button type="submit">Generate Slides</button>
-        </form>
-        {% if error %}
-        <p style="color: red;">{{ error }}</p>
-        {% endif %}
-    </div>
+  <div class="container">
+    <h1>RevAIse - Convert YouTube to Slides</h1>
+    <!-- Add an ID to your form for easier selection -->
+    <form id="summaryForm">
+      <input type="text" name="youtube_url" placeholder="Enter YouTube URL" required>
+      <button type="submit">Generate Slides</button>
+    </form>
+    {% if error %}
+      <p style="color: red;">{{ error }}</p>
+    {% endif %}
+  </div>
+
+  <!-- JavaScript code to handle the form submission -->
+  <script>
+    // Wait until the DOM is fully loaded
+    document.getElementById('summaryForm').addEventListener('submit', function(event) {
+      event.preventDefault(); // Prevent the default form submission behavior
+
+      // Retrieve the value of the YouTube URL from the form
+      const youtubeUrl = event.target.youtube_url.value;
+
+      // Send a POST request with JSON data to the '/generate_summary' endpoint
+      fetch('/generate_summary', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ youtube_url: youtubeUrl })
+      })
+      .then(response => {
+        // Check if the response is OK (status code in the range 200-299)
+        if (!response.ok) {
+          throw new Error('Network response was not OK');
+        }
+        return response.json();
+      })
+      .then(data => {
+        // Process the JSON response here
+        console.log('Success:', data);
+        // For example, you could display the summary or other results on the page.
+        // You might add code to update the DOM with the received data.
+      })
+      .catch(error => {
+        console.error('Error:', error);
+      });
+    });
+  </script>
 </body>
 </html>
