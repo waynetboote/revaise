@@ -1,6 +1,5 @@
 # youtube_transcript.py
 import re
-from urllib.parse import urlparse
 from youtube_transcript_api import YouTubeTranscriptApi
 
 def extract_video_id(youtube_url):
@@ -9,16 +8,13 @@ def extract_video_id(youtube_url):
     Returns the video ID if found and if the URL is from an allowed YouTube domain;
     otherwise, returns None.
     """
-    # Parse the URL to extract the domain
+    from urllib.parse import urlparse
     parsed_url = urlparse(youtube_url)
-    # Define a set of allowed domains (you can add more if needed)
     allowed_domains = {"youtube.com", "www.youtube.com", "youtu.be", "www.youtu.be"}
     
-    # Check if the URL's netloc is exactly one of the allowed domains
     if parsed_url.netloc not in allowed_domains:
         return None
 
-    # Use a regex with a non-capturing group for known URL patterns to extract the video ID.
     match = re.search(r"(?:v=|youtu\.be/|embed/|v/|watch\?v=)([\w-]{11})", youtube_url)
     return match.group(1) if match else None
 
@@ -32,7 +28,15 @@ def get_transcript(youtube_url):
         return "Error: Invalid YouTube URL."
     
     try:
-        transcript_entries = YouTubeTranscriptApi.get_transcript(video_id)
+        # Set a custom User-Agent header. This makes the request appear as if it is coming from a typical browser.
+        headers = {
+            "User-Agent": (
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                "AppleWebKit/537.36 (KHTML, like Gecko) "
+                "Chrome/90.0.4430.93 Safari/537.36"
+            )
+        }
+        transcript_entries = YouTubeTranscriptApi.get_transcript(video_id, headers=headers)
         transcript_text = " ".join(entry["text"] for entry in transcript_entries)
         return transcript_text
     except Exception as e:
