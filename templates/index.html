@@ -14,6 +14,8 @@
       <input type="text" name="youtube_url" placeholder="Enter YouTube URL" required>
       <button type="submit">Generate Slides</button>
     </form>
+    <!-- Container for displaying error messages to the user -->
+    <p id="errorMessage" style="color: red;"></p>
     {% if error %}
       <p style="color: red;">{{ error }}</p>
     {% endif %}
@@ -27,6 +29,9 @@
     document.getElementById('summaryForm').addEventListener('submit', function(event) {
       event.preventDefault(); // Prevent the form from doing a full-page submission
       console.log("Form submission intercepted.");
+
+      // Clear any previous error messages
+      document.getElementById('errorMessage').innerText = '';
 
       // Get the YouTube URL from the form input
       const youtubeUrl = event.target.youtube_url.value;
@@ -43,16 +48,22 @@
       .then(response => {
         console.log("Fetch response:", response);
         if (!response.ok) {
-          throw new Error('Network response was not OK');
+          // If response isn't OK, try to get the error message from the response
+          return response.json().then(errData => {
+            throw new Error(errData.error || 'Network response was not OK');
+          });
         }
         return response.json();
       })
       .then(data => {
         console.log("Data received:", data);
-        // You can update the page with data here
+        // You can update the page with the received data here.
+        // For example, you might display the summary or links.
       })
       .catch(error => {
         console.error('Error:', error);
+        // Display the error message to the user.
+        document.getElementById('errorMessage').innerText = "Error: " + error.message;
       });
     });
   </script>
