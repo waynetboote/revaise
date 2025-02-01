@@ -3,8 +3,8 @@ from youtube_transcript_api._errors import TranscriptsDisabled, NoTranscriptFoun
 import re
 
 def extract_video_id(youtube_url):
-    """Extracts the YouTube Video ID from different URL formats"""
-    pattern = r"(?:v=|\/)([0-9A-Za-z_-]{11}).*"
+    """Extracts the YouTube Video ID, removing timestamps or extra parameters"""
+    pattern = r"(?:v=|\/)([0-9A-Za-z_-]{11})"
     match = re.search(pattern, youtube_url)
     if match:
         return match.group(1)
