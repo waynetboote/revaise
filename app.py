@@ -14,6 +14,9 @@ def index():
         
         # Step 1: Get Transcript
         transcript_text = get_transcript(youtube_url)
+
+        if "Error:" in transcript_text:
+            return render_template("index.html", error=transcript_text)
         
         # Step 2: Summarize the Transcript
         summary = summarize_text(transcript_text)
