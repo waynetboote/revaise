@@ -1,8 +1,5 @@
 from youtube_transcript_api import YouTubeTranscriptApi
-
-def get_transcript(youtube_url):
-    video_id = youtube_url.split("v=")[1].split("&")[0]
-    from youtube_transcript_api import YouTubeTranscriptApi, TranscriptsDisabled
+from youtube_transcript_api._errors import TranscriptsDisabled, NoTranscriptFound
 
 def get_transcript(youtube_url):
     video_id = youtube_url.split("v=")[1].split("&")[0]
@@ -11,5 +8,7 @@ def get_transcript(youtube_url):
         return " ".join([entry["text"] for entry in transcript])
     except TranscriptsDisabled:
         return "Error: This video does not have subtitles available."
-
-    return " ".join([entry["text"] for entry in transcript])
+    except NoTranscriptFound:
+        return "Error: No transcript found for this video."
+    except Exception as e:
+        return f"Error: An unexpected error occurred - {str(e)}"
