@@ -13,7 +13,7 @@ RUN apt-get update && apt-get install -y \
 
 # Set environment variables for Chromium and ChromeDriver
 ENV CHROME_BIN=/usr/bin/chromium-browser
-ENV CHROMEDRIVER_BIN=/usr/bin/chromedriver
+ENV CHROMEDRIVER_PATH=/usr/bin/chromedriver
 
 # Set working directory
 WORKDIR /app
