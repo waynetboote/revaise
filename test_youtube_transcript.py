@@ -2,7 +2,7 @@
 from youtube_transcript import extract_video_id, get_transcript
 
 # Replace with a valid YouTube URL that you know has a transcript
-valid_url = "https://www.youtube.com/watch?v=x3c1ih2NJEg"
+valid_url = "https://www.youtube.com/watch?v=DpQQi2scsHo"
 invalid_url = "https://www.notyoutube.com/watch?v=12345678901"
 
 def test_extract_video_id():
@@ -21,6 +21,7 @@ def test_get_transcript():
         print("Error fetching transcript:", transcript)
     else:
         print("Transcript fetched successfully.")
+        print(transcript)
     
 if __name__ == "__main__":
     test_extract_video_id()
