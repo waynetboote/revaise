@@ -37,7 +37,7 @@ def get_transcript(youtube_url):
         return "Error: Invalid YouTube URL."
     
     try:
-        transcript_entries = YouTubeTranscriptApi.get_transcript(video_id)
+        transcript_entries = YouTubeTranscriptApi.get_transcript(video_id, languages=['en'])
         transcript_text = " ".join(entry["text"] for entry in transcript_entries)
         return transcript_text
     except Exception as e:
