@@ -1,10 +1,10 @@
-# Use an official lightweight Python image
+# Use a lightweight Python image
 FROM python:3.9-slim
 
-# Install Chromium, ChromeDriver, and dependencies
+# Install dependencies
 RUN apt-get update && apt-get install -y \
     chromium chromium-driver \
-    wget unzip \
+    wget unzip curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Set environment variables for Chromium and ChromeDriver
@@ -20,7 +20,7 @@ COPY . /app
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Expose port (needed for Render)
+# Expose port for Render
 EXPOSE 5000
 
 # Start the application
