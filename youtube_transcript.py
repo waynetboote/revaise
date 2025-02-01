@@ -1,59 +1,17 @@
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.chrome.options import Options
-from webdriver_manager.chrome import ChromeDriverManager
-import os
+from youtube_transcript_api import YouTubeTranscriptApi
 import re
 
 def extract_video_id(youtube_url):
-    """Extracts the YouTube Video ID from different URL formats."""
-    pattern = r"(?:v=|\/)([0-9A-Za-z_-]{11})"
-    match = re.search(pattern, youtube_url)
-    if match:
-        return match.group(1)
-    return None  # Return None if no valid video ID is found
+    match = re.search(r"(?<=v=|youtu\.be/|embed/|v/|watch\?v=)([\w-]{11})", youtube_url)
+    return match.group(1) if match else None
 
 def get_transcript(youtube_url):
-    """Uses Selenium to extract YouTube subtitles."""
     video_id = extract_video_id(youtube_url)
-
     if not video_id:
-        return "Error: Invalid YouTube URL. Please enter a correct YouTube link."
-
+        return "Error: Invalid YouTube URL."
+    
     try:
-        # ✅ **Correct Chromium path**
-        chrome_binary_path = "/usr/bin/chromium"
-        os.environ["CHROME_BIN"] = chrome_binary_path  # Ensure Selenium finds it
-
-        # ✅ **Automatically manage ChromeDriver installation**
-        service = Service(ChromeDriverManager().install())
-
-        # Configure Selenium with Chrome
-        options = Options()
-        options.binary_location = chrome_binary_path
-        options.add_argument("--headless")  # Run in background (no GUI)
-        options.add_argument("--disable-gpu")
-        options.add_argument("--no-sandbox")
-        options.add_argument("--disable-dev-shm-usage")
-
-        driver = webdriver.Chrome(service=service, options=options)
-
-        # Open YouTube video
-        video_url = f"https://www.youtube.com/watch?v={video_id}"
-        driver.get(video_url)
-
-        # Extract transcript text
-        transcript_text = ""
-        captions = driver.find_elements("xpath", "//div[contains(@class,'captions-text')]")
-        for caption in captions:
-            transcript_text += caption.text + " "
-
-        driver.quit()  # Close browser
-
-        if not transcript_text:
-            return "Error: Could not retrieve transcript from YouTube."
-
-        return transcript_text.strip()
-
+        transcript = YouTubeTranscriptApi.get_transcript(video_id)
+        return " ".join([entry["text"] for entry in transcript])
     except Exception as e:
-        return f"Error: Unexpected error - {str(e)}"
+        return f"Error fetching transcript: {str(e)}"
