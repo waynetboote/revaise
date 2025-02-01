@@ -15,11 +15,11 @@ def extract_video_id(youtube_url):
     return None  # Return None if no valid video ID is found
 
 def download_chromium():
-    """Downloads and installs Chromium and ChromeDriver if not already present."""
+    """Downloads and extracts a portable version of Chromium and ChromeDriver."""
     chrome_path = "/tmp/chrome-linux/chrome"
     driver_path = "/tmp/chromedriver"
 
-    # Download Chromium if not installed
+    # Install Chromium if not already installed
     if not os.path.exists(chrome_path):
         print("Downloading Chromium...")
         os.makedirs("/tmp/chrome-linux", exist_ok=True)
@@ -27,13 +27,14 @@ def download_chromium():
             "wget",
             "-q",
             "-O",
-            "/tmp/chromium.AppImage",
-            "https://github.com/AppImage/appimage.github.io/releases/download/latest/Chromium-x86_64.AppImage"
+            "/tmp/chromium.zip",
+            "https://storage.googleapis.com/chromium-browser-snapshots/Linux_x64/1036823/chrome-linux.zip"
         ])
-        subprocess.run(["chmod", "+x", "/tmp/chromium.AppImage"])
+        subprocess.run(["unzip", "/tmp/chromium.zip", "-d", "/tmp/chrome-linux"])
+        subprocess.run(["chmod", "+x", "/tmp/chrome-linux/chrome"])
         print("Chromium installed successfully!")
 
-    # Download ChromeDriver if not installed
+    # Install ChromeDriver if not already installed
     if not os.path.exists(driver_path):
         print("Downloading ChromeDriver...")
         subprocess.run([
@@ -47,7 +48,7 @@ def download_chromium():
         subprocess.run(["chmod", "+x", "/tmp/chromedriver"])
         print("ChromeDriver installed successfully!")
 
-    return "/tmp/chromium.AppImage", driver_path
+    return chrome_path, driver_path
 
 def get_transcript(youtube_url):
     """Uses Selenium to extract YouTube subtitles (bypasses API restrictions)."""
@@ -66,6 +67,7 @@ def get_transcript(youtube_url):
         options.add_argument("--disable-gpu")
         options.add_argument("--no-sandbox")
         options.add_argument("--disable-dev-shm-usage")
+        options.add_argument("--remote-debugging-port=9222")
 
         driver = webdriver.Chrome(service=Service(chromedriver_path), options=options)
 
