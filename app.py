@@ -11,20 +11,25 @@ app = Flask(__name__)
 def index():
     if request.method == "POST":
         youtube_url = request.form.get("youtube_url")
-        
-        # Step 1: Get Transcript
+
+        # ✅ Validate input URL
+        if not youtube_url or "youtube.com" not in youtube_url:
+            return render_template("index.html", error="Error: Invalid YouTube URL.")
+
+        # ✅ Step 1: Get Transcript
         transcript_text = get_transcript(youtube_url)
 
-        if "Error:" in transcript_text:
+        # ✅ Handle transcript errors
+        if not transcript_text or "Error:" in transcript_text:
             return render_template("index.html", error=transcript_text)
         
-        # Step 2: Summarize the Transcript
+        # ✅ Step 2: Summarize the Transcript
         summary = summarize_text(transcript_text)
         
-        # Step 3: Generate PowerPoint
+        # ✅ Step 3: Generate PowerPoint
         pptx_file = create_pptx(summary)
 
-        # Step 4: Create Google Slides Presentation
+        # ✅ Step 4: Create Google Slides Presentation
         google_slides_link = create_google_slides(summary)
 
         return render_template("result.html", pptx_link=pptx_file, slides_link=google_slides_link)
@@ -32,5 +37,5 @@ def index():
     return render_template("index.html")
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 10000))  # Use Render's assigned port
+    port = int(os.environ.get("PORT", 5000))  # ✅ Use Render's assigned port
     app.run(host="0.0.0.0", port=port)
