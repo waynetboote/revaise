@@ -1,7 +1,9 @@
-from youtube_transcript_api import YouTubeTranscriptApi
-from youtube_transcript_api._errors import TranscriptsDisabled, NoTranscriptFound
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.chrome.options import Options
+import time
 import re
-import requests
 
 def extract_video_id(youtube_url):
     """Extracts the YouTube Video ID from different URL formats."""
@@ -11,51 +13,48 @@ def extract_video_id(youtube_url):
         return match.group(1)
     return None  # Return None if no valid video ID is found
 
-def fetch_transcript_alt(video_id):
-    """Alternative method: Fetch transcript using YouTube's internal API."""
-    url = f"https://www.youtube.com/api/timedtext?v={video_id}&lang=en"
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
-    }
-
-    response = requests.get(url, headers=headers)
-
-    if response.status_code == 200 and response.text:
-        return response.text  # Returns raw XML subtitles (can be processed further)
-    
-    return "Error: This video does not allow transcript access."
-
 def get_transcript(youtube_url):
+    """Uses Selenium to extract YouTube subtitles (bypasses API restrictions)."""
     video_id = extract_video_id(youtube_url)
-    
+
     if not video_id:
         return "Error: Invalid YouTube URL. Please enter a correct YouTube link."
 
     try:
-        transcript_list = YouTubeTranscriptApi.list_transcripts(video_id)
+        # Configure Selenium (headless browser)
+        options = Options()
+        options.add_argument("--headless")  # Run in background (no GUI)
+        options.add_argument("--disable-gpu")
+        options.add_argument("--no-sandbox")
+        options.add_argument("--disable-dev-shm-usage")
 
-        # Prioritize manually added English subtitles
+        driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+
+        # Open YouTube video
+        video_url = f"https://www.youtube.com/watch?v={video_id}"
+        driver.get(video_url)
+        time.sleep(5)  # Allow page to load
+
+        # Try to enable captions (if not already enabled)
         try:
-            transcript = transcript_list.find_transcript(['en'])
+            cc_button = driver.find_element("xpath", "//button[@aria-label='Turn on captions']")
+            cc_button.click()
+            time.sleep(3)
         except:
-            transcript = None  # English (manual) not found
+            pass  # Captions might already be on
 
-        # If no manual English, use auto-generated English
-        if not transcript:
-            try:
-                transcript = transcript_list.find_generated_transcript(['en'])
-            except:
-                return "Error: No English transcript available."
+        # Extract transcript text
+        transcript_text = ""
+        captions = driver.find_elements("xpath", "//div[contains(@class,'captions-text')]")
+        for caption in captions:
+            transcript_text += caption.text + " "
 
-        # Fetch the transcript and return the text
-        return " ".join([entry["text"] for entry in transcript.fetch()])
-    
-    except TranscriptsDisabled:
-        print("Fallback: Trying alternative transcript method...")
-        return fetch_transcript_alt(video_id)  # Use alternative YouTube API method
-    
-    except NoTranscriptFound:
-        return "Error: No transcript found for this video."
-    
+        driver.quit()  # Close browser
+
+        if not transcript_text:
+            return "Error: Could not retrieve transcript from YouTube."
+
+        return transcript_text.strip()
+
     except Exception as e:
         return f"Error: Unexpected error - {str(e)}"
