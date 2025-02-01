@@ -1,13 +1,24 @@
 # youtube_transcript.py
 import re
+from urllib.parse import urlparse
 from youtube_transcript_api import YouTubeTranscriptApi
 
 def extract_video_id(youtube_url):
     """
-    Extract the 11-character video ID from a YouTube URL.
-    Returns the video ID if found; otherwise, returns None.
+    Extract the 11-character video ID from a valid YouTube URL.
+    Returns the video ID if found and if the URL is from an allowed YouTube domain;
+    otherwise, returns None.
     """
-    # Use a non-capturing group for known URL patterns.
+    # Parse the URL to extract the domain
+    parsed_url = urlparse(youtube_url)
+    # Define a set of allowed domains (you can add more if needed)
+    allowed_domains = {"youtube.com", "www.youtube.com", "youtu.be", "www.youtu.be"}
+    
+    # Check if the URL's netloc is exactly one of the allowed domains
+    if parsed_url.netloc not in allowed_domains:
+        return None
+
+    # Use a regex with a non-capturing group for known URL patterns to extract the video ID.
     match = re.search(r"(?:v=|youtu\.be/|embed/|v/|watch\?v=)([\w-]{11})", youtube_url)
     return match.group(1) if match else None
 
