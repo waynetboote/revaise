@@ -1,3 +1,4 @@
+import os
 from flask import Flask, render_template, request, send_file
 from youtube_transcript import get_transcript
 from summarization import summarize_text
@@ -28,4 +29,5 @@ def index():
     return render_template("index.html")
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 10000))  # Use Render's assigned port
+    app.run(host="0.0.0.0", port=port)
