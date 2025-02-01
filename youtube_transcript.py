@@ -17,11 +17,27 @@ def get_transcript(youtube_url):
         return "Error: Invalid YouTube URL. Please enter a correct YouTube link."
 
     try:
-        transcript = YouTubeTranscriptApi.get_transcript(video_id)
-        return " ".join([entry["text"] for entry in transcript])
+        transcript_list = YouTubeTranscriptApi.list_transcripts(video_id)
+
+        # Prioritize manually added English subtitles
+        try:
+            transcript = transcript_list.find_transcript(['en'])
+        except:
+            transcript = None  # English (manual) not found
+
+        # If no manual English, use auto-generated English
+        if not transcript:
+            try:
+                transcript = transcript_list.find_generated_transcript(['en'])
+            except:
+                return "Error: No English transcript available."
+
+        # Fetch the transcript and return the text
+        return " ".join([entry["text"] for entry in transcript.fetch()])
+    
     except TranscriptsDisabled:
-        return "Error: This video does not have subtitles available."
+        return "Error: This video does not allow transcript access."
     except NoTranscriptFound:
         return "Error: No transcript found for this video."
     except Exception as e:
-        return f"Error: An unexpected error occurred - {str(e)}"
+        return f"Error: Unexpected error - {str(e)}"
