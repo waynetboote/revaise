@@ -11,8 +11,8 @@ RUN apt-get update && apt-get install -y \
     wget curl unzip \
     && rm -rf /var/lib/apt/lists/*
 
-# Set environment variables for Chromium and ChromeDriver
-ENV CHROME_BIN=/usr/bin/chromium-browser
+# ✅ **Fix: Correct Chromium path**
+ENV CHROME_BIN=/usr/bin/chromium
 ENV CHROMEDRIVER_PATH=/usr/bin/chromedriver
 
 # Set working directory
