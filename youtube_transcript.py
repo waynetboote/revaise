@@ -1,6 +1,17 @@
 from youtube_transcript_api import YouTubeTranscriptApi
 from youtube_transcript_api._errors import TranscriptsDisabled, NoTranscriptFound
 import re
+import requests
+
+def fetch_transcript_alt(video_id):
+    """Alternative method: Fetch transcript using YouTube's internal API"""
+    url = f"https://www.youtube.com/api/timedtext?v={video_id}&lang=en"
+    response = requests.get(url)
+    
+    if response.status_code == 200 and response.text:
+        return response.text  # Returns raw XML subtitles (can be processed further)
+    
+    return "Error: This video does not allow transcript access."
 
 def extract_video_id(youtube_url):
     """Extracts the YouTube Video ID, removing timestamps or extra parameters"""
