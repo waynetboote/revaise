@@ -2,9 +2,7 @@ from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 import os
-import time
 import re
-import subprocess
 
 def extract_video_id(youtube_url):
     """Extracts the YouTube Video ID from different URL formats."""
@@ -14,42 +12,6 @@ def extract_video_id(youtube_url):
         return match.group(1)
     return None  # Return None if no valid video ID is found
 
-def download_chromium():
-    """Downloads and extracts a portable version of Chromium and ChromeDriver."""
-    chrome_path = "/tmp/chrome-linux/chrome"
-    driver_path = "/tmp/chromedriver"
-
-    # Install Chromium if not already installed
-    if not os.path.exists(chrome_path):
-        print("Downloading Chromium...")
-        os.makedirs("/tmp/chrome-linux", exist_ok=True)
-        subprocess.run([
-            "wget",
-            "-q",
-            "-O",
-            "/tmp/chromium.zip",
-            "https://storage.googleapis.com/chromium-browser-snapshots/Linux_x64/1036823/chrome-linux.zip"
-        ])
-        subprocess.run(["unzip", "/tmp/chromium.zip", "-d", "/tmp/chrome-linux"])
-        subprocess.run(["chmod", "+x", "/tmp/chrome-linux/chrome"])
-        print("Chromium installed successfully!")
-
-    # Install ChromeDriver if not already installed
-    if not os.path.exists(driver_path):
-        print("Downloading ChromeDriver...")
-        subprocess.run([
-            "wget",
-            "-q",
-            "-O",
-            "/tmp/chromedriver.zip",
-            "https://chromedriver.storage.googleapis.com/114.0.5735.90/chromedriver_linux64.zip"
-        ])
-        subprocess.run(["unzip", "/tmp/chromedriver.zip", "-d", "/tmp/"])
-        subprocess.run(["chmod", "+x", "/tmp/chromedriver"])
-        print("ChromeDriver installed successfully!")
-
-    return chrome_path, driver_path
-
 def get_transcript(youtube_url):
     """Uses Selenium to extract YouTube subtitles (bypasses API restrictions)."""
     video_id = extract_video_id(youtube_url)
@@ -58,7 +20,9 @@ def get_transcript(youtube_url):
         return "Error: Invalid YouTube URL. Please enter a correct YouTube link."
 
     try:
-        chrome_binary_path, chromedriver_path = download_chromium()  # Ensure Chromium and ChromeDriver are installed
+        # **Correct Chrome binary path for Render**
+        chrome_binary_path = "/usr/bin/chromium-browser"
+        chromedriver_path = "/usr/bin/chromedriver"
 
         # Configure Selenium with Chromium
         options = Options()
@@ -67,22 +31,15 @@ def get_transcript(youtube_url):
         options.add_argument("--disable-gpu")
         options.add_argument("--no-sandbox")
         options.add_argument("--disable-dev-shm-usage")
-        options.add_argument("--remote-debugging-port=9222")
 
         driver = webdriver.Chrome(service=Service(chromedriver_path), options=options)
 
         # Open YouTube video
         video_url = f"https://www.youtube.com/watch?v={video_id}"
         driver.get(video_url)
-        time.sleep(5)  # Allow page to load
 
-        # Try to enable captions (if not already enabled)
-        try:
-            cc_button = driver.find_element("xpath", "//button[@aria-label='Turn on captions']")
-            cc_button.click()
-            time.sleep(3)
-        except:
-            pass  # Captions might already be on
+        # Wait for captions to load
+        driver.implicitly_wait(5)
 
         # Extract transcript text
         transcript_text = ""
