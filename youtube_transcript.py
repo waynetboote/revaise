@@ -21,15 +21,12 @@ def get_transcript(youtube_url):
         return "Error: Invalid YouTube URL. Please enter a correct YouTube link."
 
     try:
-        # **Force Selenium to use system-installed Chrome**
-        chrome_binary_path = "/usr/bin/chromium-browser"
-        chromedriver_path = "/usr/bin/chromedriver"
+        # ✅ **Correct Chromium path**
+        chrome_binary_path = "/usr/bin/chromium"
+        os.environ["CHROME_BIN"] = chrome_binary_path  # Ensure Selenium finds it
 
-        os.environ["CHROME_BIN"] = chrome_binary_path
-        os.environ["CHROMEDRIVER_PATH"] = chromedriver_path  # Ensure it's accessible
-
-        # **Explicitly specify the ChromeDriver location**
-        service = Service(chromedriver_path)
+        # ✅ **Automatically manage ChromeDriver installation**
+        service = Service(ChromeDriverManager().install())
 
         # Configure Selenium with Chrome
         options = Options()
