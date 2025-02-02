@@ -64,12 +64,16 @@
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ms-auto">
           <li class="nav-item">
-            <a class="nav-link {% if active_page == 'youtube' %}active{% endif %}" href="{{ url_for('youtube_tool') }}">YouTube to Slides</a>
+          <a class="nav-link {% if active_page == 'home' %}active{% endif %}" href="{{ url_for('home') }}">Home</a>
+          </li>
+          <li class="nav-item">
+          <a class="nav-link {% if active_page == 'youtube' %}active{% endif %}" href="{{ url_for('youtube_tool') }}">YouTube to Slides</a>
           </li>
           <li class="nav-item">
             <a class="nav-link {% if active_page == 'convert' %}active{% endif %}" href="{{ url_for('convert_tool') }}">Adapt Text</a>
-          </li>
-        </ul>
+        </li>
+      </ul>
+
       </div>
     </div>
   </nav>
