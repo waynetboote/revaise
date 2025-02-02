@@ -3,7 +3,7 @@ import audioop
 import sys
 sys.modules["pyaudioop"] = audioop
 
-import ssl  # Import ssl to modify certificate verification
+import ssl  # Import ssl to modify certificate verification if needed
 import os
 import logging
 from datetime import datetime
@@ -31,7 +31,7 @@ openai.api_key = os.environ.get("OPENAI_API_KEY")
 # Initialize Redis connection and RQ queue.
 # Ensure that the REDIS_URL environment variable is set.
 redis_url = os.environ.get("REDIS_URL", "redis://localhost:6379")
-# Disable SSL certificate verification (use only if you understand the risks)
+# Disable SSL certificate verification (use with caution)
 redis_conn = Redis.from_url(redis_url, ssl_cert_reqs=ssl.CERT_NONE)
 q = Queue(connection=redis_conn)
 
@@ -94,6 +94,43 @@ def podcast_status(job_id):
         app.logger.error("Error fetching job status: %s", str(e))
         return render_template('podcast.html', error="Error fetching job status.",
                                current_year=datetime.now().year, active_page="podcast")
+
+# New endpoint for the Activity Ideas Generator
+@app.route('/ideas', methods=['GET', 'POST'])
+def ideas():
+    if request.method == 'POST':
+        # Get form data: topic, year group and any additional information
+        topic = request.form.get("topic")
+        year_group = request.form.get("year_group")
+        additional = request.form.get("additional")
+        if not topic or not year_group:
+            error = "Please provide both a topic and a year group."
+            return render_template('ideas.html', error=error, current_year=datetime.now().year)
+        
+        # Construct a prompt for OpenAI including the provided details.
+        prompt = (
+            f"Generate a list of creative activity ideas for teaching the topic '{topic}' "
+            f"to a year group {year_group}. {additional if additional else ''} "
+            "Provide the ideas as a numbered list."
+        )
+        try:
+            response = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo",
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.7,
+            )
+            ideas_response = response.choices[0].message["content"].strip()
+        except Exception as e:
+            app.logger.error("Error generating activity ideas: %s", str(e))
+            ideas_response = f"Error generating ideas: {str(e)}"
+        return render_template('ideas.html',
+                               ideas=ideas_response,
+                               topic=topic,
+                               year_group=year_group,
+                               additional=additional,
+                               current_year=datetime.now().year)
+    else:
+        return render_template('ideas.html', current_year=datetime.now().year)
 
 @app.route('/privacy')
 def privacy_policy():
