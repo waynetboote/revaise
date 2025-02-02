@@ -22,7 +22,7 @@
     /* Hero section style for the landing page (if needed) */
     .hero-section {
       position: relative;
-      background: url("{{ url_for('static', filename='hero-image.jpg') }}") no-repeat center center;
+      background: url("{{ url_for('static', filename='hero-image.jepg') }}") no-repeat center center;
       background-size: cover;
       height: 60vh;
       display: flex;
@@ -85,6 +85,7 @@
   </main>
 
   <!-- Footer -->
+  <br><br>
   <footer class="bg-dark text-white py-4">
     <div class="container text-center">
       &copy; {{ current_year if current_year else '2025' }} RevAIse. All rights reserved.
