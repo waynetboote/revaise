@@ -75,6 +75,29 @@ def home():
 def health_check():
     return jsonify(status="ok"), 200
 
+from flask import send_file
+from ppt_generator import generate_pdf
+
+@app.route('/export_pdf', methods=['POST'])
+@limiter.limit("10/hour")  # Apply rate limiting
+def export_pdf():
+    try:
+        data = request.get_json()
+        if not data or 'content' not in data:
+            return jsonify({"error": "No content provided"}), 400
+            
+        pdf_buffer = generate_pdf(data['content'])
+        return send_file(
+            pdf_buffer,
+            mimetype='application/pdf',
+            download_name='lesson_plan.pdf',
+            as_attachment=True
+        )
+        
+    except Exception as e:
+        logger.error(f"PDF Export Error: {str(e)}")
+        return jsonify({"error": "Failed to generate PDF"}), 500
+
 @app.route('/podcast', methods=['GET', 'POST'])
 @limiter.limit("3/hour")
 def podcast_tool():
