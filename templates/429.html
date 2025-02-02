@@ -1,0 +1,24 @@
+{# 429.html #}
+{% extends "base.html" %}
+
+{% block title %}Too Many Requests{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8 text-center">
+      <h1 class="display-1 text-primary">429</h1>
+      <h2 class="mb-4">Slow Down, Super Teacher!</h2>
+      <p class="lead">
+        You're making requests faster than we can process them.<br>
+        Please wait a few minutes and try again.
+      </p>
+      <div class="mt-4">
+        <a href="{{ url_for('home') }}" class="btn btn-primary btn-lg">
+          <i class="bi bi-house-door me-2"></i>Return Home
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
