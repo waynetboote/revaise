@@ -7,11 +7,14 @@
   <div class="w3-overlay" style="background-color:rgba(0,0,0,0.6);"></div>
   <div class="w3-content" style="position:relative; z-index:1;">
     <h1 class="w3-jumbo">Welcome to RevAIse</h1>
-    <p class="w3-large">Your one-stop tool for converting YouTube videos to slides and adapting text for different reading levels.</p>
+    <p class="w3-large">Your one-stop tool for converting YouTube videos to slides, adapting text, and generating activity ideas.</p>
+    
     <div class="w3-margin-top">
       <a href="{{ url_for('youtube_tool') }}" class="w3-button w3-blue w3-round-large">YouTube to Slides</a>
       <a href="{{ url_for('convert_tool') }}" class="w3-button w3-green w3-round-large">Adapt Text</a>
+      <a href="{{ url_for('ideas') }}" class="w3-button w3-orange w3-round-large">Activity Ideas</a>
     </div>
+
     <img src="{{ url_for('static', filename='hero-image.jpg') }}" alt="Hero Image" class="w3-image" style="max-width:100%; margin-top:20px;">
   </div>
 </header>
