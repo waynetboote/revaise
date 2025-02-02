@@ -1,28 +1,39 @@
 # app.py
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, redirect, url_for
 from youtube_transcript import get_transcript
 from summarization import summarize_text
 from ppt_generator import create_pptx
 from google_slides_creator import create_google_slides
-import logging
 import os
 import openai
+import logging
+from datetime import datetime
 
 app = Flask(__name__)
 logging.basicConfig(level=logging.DEBUG)
 
+# Configure OpenAI API key from environment
+openai.api_key = os.environ.get("OPENAI_API_KEY")
+
 @app.route('/')
-def index():
-    # Ensure you have a 'templates/index.html' file.
-    return render_template('index.html')
+def home():
+    # You can choose a landing page or redirect to one of the tools; here, we'll redirect to the YouTube tool.
+    return redirect(url_for('youtube_tool'))
+
+@app.route('/youtube')
+def youtube_tool():
+    return render_template('youtube.html', active_page='youtube', current_year=datetime.now().year)
+
+@app.route('/convert')
+def convert_tool():
+    return render_template('convert.html', active_page='convert', current_year=datetime.now().year)
 
 @app.route('/generate_summary', methods=['POST'])
 def generate_summary():
     data = request.get_json()
     youtube_url = data.get("youtube_url")
-    
     if not youtube_url:
-        app.logger.error("No YouTube URL provided in the request")
+        app.logger.error("No YouTube URL provided")
         return jsonify({"error": "No URL provided"}), 400
 
     transcript = get_transcript(youtube_url)
@@ -32,12 +43,8 @@ def generate_summary():
 
     summary = summarize_text(transcript)
     app.logger.debug("Text successfully summarized.")
-
-    # Generate a PowerPoint presentation with the summary.
     ppt_file = create_pptx(summary)
     app.logger.debug(f"PowerPoint generated: {ppt_file}")
-
-    # Generate a Google Slides presentation and get its link.
     slides_link = create_google_slides(summary)
     app.logger.debug(f"Google Slides link: {slides_link}")
 
@@ -49,15 +56,11 @@ def generate_summary():
     }
     return jsonify(response)
 
-# Configure the OpenAI API key
-openai.api_key = os.environ.get("OPENAI_API_KEY")
-
 @app.route('/convert_text', methods=['POST'])
 def convert_text():
     data = request.get_json()
     input_text = data.get("input_text")
     year_group = data.get("year_group")
-    
     if not input_text or not year_group:
         app.logger.error("Missing input text or year group")
         return jsonify({"error": "Missing input text or year group"}), 400
@@ -70,7 +73,6 @@ def convert_text():
     )
 
     try:
-        # Use ChatGPT via OpenAI's ChatCompletion API
         response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
             messages=[
@@ -89,7 +91,5 @@ def convert_text():
         app.logger.error("Error during text conversion: %s", str(e))
         return jsonify({"error": str(e)}), 500
 
-
 if __name__ == "__main__":
-    # For development only; disable debug mode in production.
     app.run(debug=True)
