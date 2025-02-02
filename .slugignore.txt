@@ -1,8 +1,19 @@
+# .slugignore
 *.pdf
 *.mp3
 *.pptx
 *.zip
 *.tar.gz
+*.mp4
+*.avi
+*.mov
+*.wav
 tests/
 examples/
 docs/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.DS_Store
