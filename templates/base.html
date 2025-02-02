@@ -1,62 +1,88 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-bs-theme="light">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>RevAIse - {% block title %}{% endblock %}</title>
-  <!-- W3.CSS for styling -->
-  <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
-  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-  <style>
-    /* Custom styles */
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #fdf6e3;
-      color: #333;
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
-    }
-    .content {
-      flex: 1;
-    }
-    .footer {
-      position: relative;
-      bottom: 0;
-      width: 100%;
-      background-color: #000;
-      color: white;
-      padding: 10px 0;
-      text-align: center;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="RevAIse - AI-Powered Teaching Assistant">
+    
+    <!-- Preload critical resources -->
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" as="style">
+    <link rel="preload" href="{{ url_for('static', filename='css/main.css') }}" as="style">
+    
+    <!-- Core CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/accessibility.css') }}">
+    
+    <!-- Favicon -->
+    <link rel="icon" href="{{ url_for('static', filename='img/favicon.ico') }}" type="image/x-icon">
+    
+    <title>RevAIse - {% block title %}{% endblock %}</title>
 </head>
-<body>
-  <!-- Navigation Bar -->
-  <div class="w3-top">
-    <div class="w3-bar w3-black">
-      <a href="{{ url_for('home') }}" class="w3-bar-item w3-button" style="width:20%">HOME</a>
-      <a href="{{ url_for('youtube_tool') }}" class="w3-bar-item w3-button" style="width:20%">YOUTUBE</a>
-      <a href="{{ url_for('convert_tool') }}" class="w3-bar-item w3-button" style="width:20%">CONVERT TEXT</a>
-      <a href="{{ url_for('ideas') }}" class="w3-bar-item w3-button w3-orange" style="width:20%">ACTIVITY IDEAS</a>
-      <a href="{{ url_for('podcast_tool') }}" class="w3-bar-item w3-button" style="width:20%">PODCAST</a>
-    </div>
-  </div>
 
-  <!-- Main Content -->
-  <div class="w3-container w3-padding-64 content">
-    {% block content %}
-    {% endblock %}
-  </div>
+<body class="d-flex flex-column min-vh-100">
+    <a class="visually-hidden-focusable skip-link" href="#main-content">Skip to main content</a>
 
-  <!-- Footer -->
-  <footer class="footer">
-    <a href="{{ url_for('privacy_policy') }}">Privacy Policy</a> | 
-    <a href="{{ url_for('terms') }}">Terms and Conditions</a>
-    <p>&copy; {{ current_year if current_year else '2025' }} RevAIse. All rights reserved.</p>
-  </footer>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm" aria-label="Main navigation">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('home') }}">
+                <img src="{{ url_for('static', filename='img/logo.svg') }}" 
+                     alt="RevAIse Logo" 
+                     width="150" 
+                     height="40">
+            </a>
+            
+            <button class="navbar-toggler" 
+                    type="button" 
+                    data-bs-toggle="collapse" 
+                    data-bs-target="#mainNav"
+                    aria-expanded="false" 
+                    aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
 
-  {% block scripts %}
-  {% endblock %}
+            <div class="collapse navbar-collapse" id="mainNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('youtube_tool') }}"
+                           aria-current="page">
+                           YouTube to Slides
+                        </a>
+                    </li>
+                    <!-- Additional nav items -->
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <main id="main-content" class="flex-grow-1 container my-4">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-light py-4 mt-auto">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4">
+                    <h3 class="h5">Quick Links</h3>
+                    <ul class="list-unstyled">
+                        <li><a href="{{ url_for('privacy_policy') }}" class="text-light">Privacy Policy</a></li>
+                        <li><a href="{{ url_for('terms') }}" class="text-light">Terms of Service</a></li>
+                    </ul>
+                </div>
+                <!-- Additional footer columns -->
+            </div>
+            <div class="text-center mt-3">
+                <p class="mb-0">&copy; {{ current_year }} RevAIse. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz"
+            crossorigin="anonymous"></script>
+    
+    {% block scripts %}{% endblock %}
 </body>
 </html>
