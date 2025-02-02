@@ -1,87 +1,78 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Privacy Policy - RevAIse</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-  <style>
-    /* Additional styles for the Privacy Policy page */
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #fdf6e3;
-      color: #333;
-      margin: 0;
-      padding: 0;
-      line-height: 1.6;
-    }
-    .container {
-      max-width: 800px;
-      margin: 40px auto;
-      padding: 20px;
-      background: #fff;
-      border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-    h1, h2, h3 {
-      color: #0044cc;
-      margin-top: 0;
-    }
-    ul {
-      margin-left: 20px;
-    }
-    p {
-      margin-bottom: 15px;
-    }
-    a {
-      color: #0044cc;
-      text-decoration: none;
-    }
-    a:hover {
-      text-decoration: underline;
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h1>Privacy Policy</h1>
-    <p><strong>Last Updated:</strong> 2nd February 2025</p>
+{% extends "base.html" %}
 
-    <p>At RevAIse, we are committed to protecting your privacy. This Privacy Policy outlines how we collect, use, and safeguard your personal information when you use our website and services.</p>
+{% block title %}Privacy Policy{% endblock %}
 
-    <h2>Information We Collect</h2>
-    <p>We collect both personal and non-personal information. Personal information is data that can be used to identify you (such as your name and email address) when you voluntarily provide it. Non-personal information includes technical data such as your IP address, browser type, and device information collected automatically when you visit our site.</p>
+{% block content %}
+<div class="container my-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="card shadow">
+        <div class="card-body">
+          <h1 class="h2 mb-4">Privacy Policy for Educators</h1>
+          
+          <section aria-labelledby="data-collection">
+            <h2 id="data-collection" class="h4 mb-3">1. Data We Collect</h2>
+            <p>To provide our educational services, we collect:</p>
+            <ul>
+              <li><strong>Content Data:</strong> Educational materials you input (videos, texts, etc.)</li>
+              <li><strong>Usage Data:</strong> How you interact with our teaching tools</li>
+              <li><strong>Technical Data:</strong> Browser type, device information for compatibility</li>
+            </ul>
+          </section>
 
-    <h2>How We Use Your Information</h2>
-    <p>Your information helps us to:</p>
-    <ul>
-      <li>Provide and maintain our services</li>
-      <li>Improve our website and user experience</li>
-      <li>Respond to your inquiries and support requests</li>
-      <li>Send you updates, newsletters, or promotional materials (you may opt out at any time)</li>
-    </ul>
+          <section aria-labelledby="data-usage">
+            <h2 id="data-usage" class="h4 mb-3 mt-5">2. How We Use Your Data</h2>
+            <div class="ms-4">
+              <h3 class="h6">Educational Purpose Only</h3>
+              <p>Your materials are processed to:</p>
+              <ul>
+                <li>Generate lesson plans and activities</li>
+                <li>Adapt content for different learning levels</li>
+                <li>Improve educational tool accuracy</li>
+              </ul>
+            </div>
+          </section>
 
-    <h2>Cookies and Tracking Technologies</h2>
-    <p>RevAIse uses cookies and similar tracking technologies to enhance your experience, remember your preferences, and analyze site usage. You can modify your browser settings to manage cookie usage, although this may affect how our website functions.</p>
+          <section aria-labelledby="data-security">
+            <h2 id="data-security" class="h4 mb-3 mt-5">3. Security Measures</h2>
+            <p>We protect educational data through:</p>
+            <ul>
+              <li>End-to-end encryption for all content processing</li>
+              <li>Regular security audits</li>
+              <li>Access controls limiting staff access to educational materials</li>
+            </ul>
+          </section>
 
-    <h2>Third-Party Services</h2>
-    <p>We may share your information with trusted third-party service providers who assist us in operating our website, processing payments, or delivering services. These third parties are required to protect your data and use it only for the purposes for which it was provided.</p>
+          <section aria-labelledby="third-party">
+            <h2 id="third-party" class="h4 mb-3 mt-5">4. Third-Party Services</h2>
+            <p>We integrate with these educational tools:</p>
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Service</th>
+                  <th>Purpose</th>
+                  <th>Data Shared</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Google Slides</td>
+                  <td>Presentation export</td>
+                  <td>Generated slide content</td>
+                </tr>
+                <!-- Add other services -->
+              </tbody>
+            </table>
+          </section>
 
-    <h2>Data Security</h2>
-    <p>We take reasonable measures to protect your information from unauthorized access, alteration, disclosure, or destruction. However, please note that no security system is impenetrable, and we cannot guarantee absolute security.</p>
-
-    <h2>Your Rights and Choices</h2>
-    <p>You have the right to access, update, or delete your personal information. If you have any questions about your data or wish to exercise your rights, please contact us using the details provided below.</p>
-
-    <h2>Changes to This Privacy Policy</h2>
-    <p>We may update this Privacy Policy from time to time. When we make changes, we will update the "Last Updated" date at the top of this page and, if necessary, notify you via email or a prominent notice on our site.</p>
-
-    <h2>Contact Us</h2>
-    <p>If you have any questions or concerns regarding this Privacy Policy or our data practices, please contact us at:</p>
-    <p>Email: <a href="mailto:privacy@revaise.co.uk">privacy@revaise.co.uk</a></p>
-    <p>Address: PO Box 360, Shipley, BD18 3RY </p>
-
-    <p>This Privacy Policy is governed by the laws of the United Kingdom. By using our website, you consent to the practices described in this policy.</p>
+          <div class="mt-5 text-center">
+            <a href="{{ url_for('home') }}" class="btn btn-primary">
+              <i class="bi bi-arrow-left me-2"></i>Return to Tools
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
-</body>
-</html>
+</div>
+{% endblock %}
