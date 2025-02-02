@@ -3,16 +3,19 @@ import audioop
 import sys
 sys.modules["pyaudioop"] = audioop
 
+import ssl  # Import ssl to modify certificate verification
+import os
+import logging
+from datetime import datetime
+
 from flask import Flask, request, jsonify, render_template, redirect, url_for
 from youtube_transcript import get_transcript
 from summarization import summarize_text
 from ppt_generator import create_pptx
 from google_slides_creator import create_google_slides
 from podcastfy.client import generate_podcast
-import os
+
 import openai
-import logging
-from datetime import datetime
 
 # Additional imports for RQ
 from redis import Redis
@@ -28,7 +31,8 @@ openai.api_key = os.environ.get("OPENAI_API_KEY")
 # Initialize Redis connection and RQ queue.
 # Ensure that the REDIS_URL environment variable is set.
 redis_url = os.environ.get("REDIS_URL", "redis://localhost:6379")
-redis_conn = Redis.from_url(redis_url)
+# Disable SSL certificate verification (use only if you understand the risks)
+redis_conn = Redis.from_url(redis_url, ssl_cert_reqs=ssl.CERT_NONE)
 q = Queue(connection=redis_conn)
 
 @app.route('/')
