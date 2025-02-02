@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5 text-center">
+  <h1 class="display-1">404</h1>
+  <p class="lead">Teaching Resource Not Found</p>
+  <p>We couldn't find the lesson plan you're looking for.</p>
+  <a href="{{ url_for('home') }}" class="btn btn-primary">
+    Return to Home
+  </a>
+</div>
+{% endblock %}
