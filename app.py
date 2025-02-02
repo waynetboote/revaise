@@ -51,6 +51,10 @@ def podcast_tool():
     else:
         return render_template('podcast.html', current_year=datetime.now().year, active_page="podcast")
 
+@app.route('/privacy')
+def privacy_policy():
+    return render_template('privacy.html', current_year=datetime.now().year)
+
 @app.route('/generate_summary', methods=['POST'])
 def generate_summary():
     data = request.get_json()
