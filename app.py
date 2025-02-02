@@ -8,6 +8,9 @@ import os
 import openai
 import logging
 from datetime import datetime
+import audioop
+import sys
+sys.modules["pyaudioop"] = audioop
 
 app = Flask(__name__)
 logging.basicConfig(level=logging.DEBUG)
