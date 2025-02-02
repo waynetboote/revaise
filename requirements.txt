@@ -7,5 +7,6 @@ Flask==3.1.0
 openai==0.27.8
 youtube-transcript-api==0.6.3
 gunicorn==23.0.0
+podcastify
 
 
