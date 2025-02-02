@@ -1,19 +1,27 @@
-# .slugignore
-*.pdf
-*.mp3
-*.pptx
-*.zip
-*.tar.gz
-*.mp4
-*.avi
-*.mov
-*.wav
-tests/
-examples/
+# Ignore Git-related files
+.git/
+.gitignore
+
+# Ignore documentation, tests, and other development files
 docs/
-venv/
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-.DS_Store
+tests/
+*.md
+
+# Ignore local data, cache, or temporary files (adjust these as needed)
+data/
+models/
+tmp/
+cache/
+pip_cache/
+
+# Ignore local environment files
+.env
+.env.*
+
+# Ignore build artifacts and distribution folders
+build/
+dist/
+
+# Ignore logs and backup files
+*.log
+*.bak
