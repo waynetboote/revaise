@@ -1,0 +1,8 @@
+*.pdf
+*.mp3
+*.pptx
+*.zip
+*.tar.gz
+tests/
+examples/
+docs/
