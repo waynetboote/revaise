@@ -119,7 +119,8 @@ def ideas():
                 messages=[{"role": "user", "content": prompt}],
                 temperature=0.7,
             )
-            ideas_response = response.choices[0].message["content"].strip()
+            ideas_response = response['choices'][0]['message']['content'].strip()
+
         except Exception as e:
             app.logger.error("Error generating activity ideas: %s", str(e))
             ideas_response = f"Error generating ideas: {str(e)}"
