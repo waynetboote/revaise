@@ -1,24 +1,87 @@
 {% extends "base.html" %}
 
-{% block title %}Welcome{% endblock %}
+{% block title %}AI Teaching Assistant{% endblock %}
 
 {% block content %}
-<header class="w3-container w3-padding-32 w3-center w3-black" id="home">
-  <div class="w3-overlay" style="background-color:rgba(0,0,0,0.6);"></div>
-  <div class="w3-content" style="position:relative; z-index:1;">
-    <h1 class="w3-jumbo">Welcome to RevAIse</h1>
-    <p class="w3-large">Your one-stop tool for converting YouTube videos to slides, adapting text, and generating activity ideas.</p>
-    
-    <div class="w3-margin-top">
-      <a href="{{ url_for('youtube_tool') }}" class="w3-button w3-blue w3-round-large">YouTube to Slides</a>
-      <a href="{{ url_for('convert_tool') }}" class="w3-button w3-green w3-round-large">Adapt Text</a>
-      <a href="{{ url_for('ideas') }}" class="w3-button w3-orange w3-round-large">Activity Ideas</a>
+<section aria-labelledby="main-heading" class="hero-section bg-primary text-light py-5">
+  <div class="container text-center">
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+        <h1 id="main-heading" class="display-4 fw-bold mb-4">Transform Teaching Materials in Seconds</h1>
+        <p class="lead mb-5">Convert videos to lessons, adapt texts, and generate activities - powered by AI</p>
+        
+        <div class="d-grid gap-3 d-md-flex justify-content-md-center">
+          <a href="{{ url_for('youtube_tool') }}" class="btn btn-light btn-lg px-4 gap-3">
+            <i class="bi bi-youtube me-2"></i>YouTube to Slides
+          </a>
+          <a href="{{ url_for('ideas') }}" class="btn btn-warning btn-lg px-4">
+            <i class="bi bi-lightbulb me-2"></i>Activity Ideas
+          </a>
+        </div>
+      </div>
     </div>
-
-    <img src="{{ url_for('static', filename='hero-image.jpg') }}" alt="Hero Image" class="w3-image" style="max-width:100%; margin-top:20px;">
   </div>
-</header>
+</section>
+
+<section aria-labelledby="features-heading" class="py-5 bg-light">
+  <div class="container">
+    <h2 id="features-heading" class="text-center mb-5">Why Teachers Love RevAIse</h2>
+    <div class="row g-4">
+      <div class="col-md-6 col-lg-4">
+        <div class="card h-100 shadow-sm">
+          <div class="card-body">
+            <div class="feature-icon mb-3">
+              <i class="bi bi-clock-history display-6 text-primary"></i>
+            </div>
+            <h3 class="h5 card-title">Time Saver</h3>
+            <p class="card-text">Convert 1-hour videos to slides in 2 minutes</p>
+          </div>
+        </div>
+      </div>
+      <!-- Add more feature cards -->
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="workflow-heading" class="py-5">
+  <div class="container">
+    <h2 id="workflow-heading" class="text-center mb-5">How It Works</h2>
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="step-card text-center p-4">
+          <div class="step-number">1</div>
+          <h3 class="h5 mt-3">Input Content</h3>
+          <p>YouTube URL or text passage</p>
+        </div>
+      </div>
+      <!-- Add workflow steps -->
+    </div>
+  </div>
+</section>
 {% endblock %}
 
 {% block scripts %}
+<!-- Lazy loading for images -->
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    const lazyImages = [].slice.call(document.querySelectorAll("img.lazy-load"));
+    
+    if ("IntersectionObserver" in window) {
+      let lazyImageObserver = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+          if (entry.isIntersecting) {
+            let lazyImage = entry.target;
+            lazyImage.src = lazyImage.dataset.src;
+            lazyImage.classList.remove("lazy-load");
+            lazyImageObserver.unobserve(lazyImage);
+          }
+        });
+      });
+
+      lazyImages.forEach(function(lazyImage) {
+        lazyImageObserver.observe(lazyImage);
+      });
+    }
+  });
+</script>
 {% endblock %}
