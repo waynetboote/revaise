@@ -9,7 +9,8 @@ youtube-transcript-api==0.6.3
 gunicorn==23.0.0
 podcastfy @ git+https://github.com/souzatharsis/podcastfy.git@main
 redis==4.5.4
-rq==1.12.1
+rq==1.16.2
+
 
 
 
