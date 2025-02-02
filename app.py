@@ -31,6 +31,15 @@ app.config.update(
     CACHE_REDIS_URL=os.environ.get('REDIS_URL', 'redis://localhost:6379')
 )
 
+# Allowed domains for podcast sources
+ALLOWED_DOMAINS = {
+    'youtube.com',
+    'youtu.be',
+    'soundcloud.com',
+    'spotify.com',
+    'your-school-domain.edu'  # Add institutional domains
+}
+
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
