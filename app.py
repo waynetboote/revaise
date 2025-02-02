@@ -1,3 +1,4 @@
+# Fix for Python 3.13: pydub expects a module named 'pyaudioop'
 import audioop
 import sys
 sys.modules["pyaudioop"] = audioop
