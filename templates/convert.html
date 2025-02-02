@@ -1,56 +1,129 @@
 {% extends "base.html" %}
 
-{% block title %}Adapt Text{% endblock %}
+{% block title %}Text Level Adaptor{% endblock %}
 
 {% block content %}
-<div class="w3-card w3-padding-32">
-  <h2 class="w3-center">Adapt Text for Reading Level</h2>
-  <form id="convertForm">
-    <textarea name="input_text" placeholder="Paste your text here..." class="w3-input w3-border" rows="6" required></textarea>
-    <select name="year_group" class="w3-select w3-border w3-margin-top" required>
-      <option value="" disabled selected>Select Year Group</option>
-      <option value="Year 1">Year 1</option>
-      <option value="Year 2">Year 2</option>
-      <option value="Year 3">Year 3</option>
-      <option value="Year 4">Year 4</option>
-      <option value="Year 5">Year 5</option>
-      <option value="Year 6">Year 6</option>
-      <option value="Year 7">Year 7</option>
-      <option value="Year 8">Year 8</option>
-      <option value="Year 9">Year 9</option>
-      <option value="Year 10">Year 10</option>
-      <option value="Year 11">Year 11</option>
-    </select>
-    <button type="submit" class="w3-button w3-green w3-round-large w3-margin-top">Convert</button>
-  </form>
-  <div id="convertedOutput" class="w3-margin-top"></div>
+<div class="container mt-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-10">
+      <div class="card shadow">
+        <div class="card-header bg-info text-white">
+          <h2 class="h4 mb-0">Text Complexity Adjuster</h2>
+        </div>
+
+        <div class="card-body">
+          <div class="row g-4">
+            <!-- Input Column -->
+            <div class="col-md-6">
+              <form id="adaptForm">
+                <div class="mb-3">
+                  <label for="originalText" class="form-label">Original Text</label>
+                  <textarea class="form-control" id="originalText" 
+                            rows="8" placeholder="Paste text here..." 
+                            required></textarea>
+                </div>
+                
+                <div class="mb-3">
+                  <label for="targetLevel" class="form-label">Target Level</label>
+                  <select class="form-select" id="targetLevel">
+                    <option value="foundation">Foundation (Year 1-2)</option>
+                    <option value="intermediate">Intermediate (Year 3-6)</option>
+                    <option value="advanced">Advanced (Year 7-10)</option>
+                    <option value="extension">Extension (Year 11+)</option>
+                  </select>
+                </div>
+
+                <div class="d-grid">
+                  <button type="submit" class="btn btn-info btn-lg">
+                    Adapt Text <i class="bi bi-arrow-repeat ms-2"></i>
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <!-- Output Column -->
+            <div class="col-md-6">
+              <div class="sticky-top" style="top: 20px;">
+                <div class="card">
+                  <div class="card-header bg-secondary text-white">
+                    <h3 class="h6 mb-0">Adapted Text</h3>
+                  </div>
+                  <div class="card-body">
+                    <div id="adaptedOutput" class="adapted-text">
+                      <p class="text-muted">Your adapted text will appear here...</p>
+                    </div>
+                    <div class="mt-3">
+                      <button class="btn btn-sm btn-outline-primary" 
+                              id="copyText" disabled>
+                        <i class="bi bi-clipboard"></i> Copy
+                      </button>
+                      <button class="btn btn-sm btn-outline-success" 
+                              id="saveAdaptation" disabled>
+                        <i class="bi bi-download"></i> Save
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="card mt-3">
+                  <div class="card-body">
+                    <h4 class="h6">Complexity Analysis</h4>
+                    <div id="complexityStats">
+                      <div class="d-flex justify-content-between">
+                        <span>Readability Score:</span>
+                        <span id="readabilityScore">-</span>
+                      </div>
+                      <!-- Add more metrics -->
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
 <script>
-document.getElementById("convertForm").addEventListener("submit", function(event) {
-  event.preventDefault();
-  document.getElementById("convertedOutput").innerHTML = "";
-  const inputText = event.target.input_text.value;
-  const yearGroup = event.target.year_group.value;
-  fetch("/convert_text", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ input_text: inputText, year_group: yearGroup })
-  })
-  .then(response => {
-    if (!response.ok) {
-      return response.json().then(errData => { throw new Error(errData.error || "Conversion failed"); });
-    }
-    return response.json();
-  })
-  .then(data => {
-    document.getElementById("convertedOutput").innerHTML = "<h4>Converted Text:</h4><p>" + data.converted_text + "</p>";
-  })
-  .catch(error => {
-    document.getElementById("convertedOutput").innerHTML = "<p class='w3-text-red'>Error: " + error.message + "</p>";
-  });
+document.getElementById('adaptForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  
+  const originalText = document.getElementById('originalText').value;
+  const targetLevel = document.getElementById('targetLevel').value;
+  
+  try {
+    const response = await fetch('/convert_text', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        input_text: originalText,
+        year_group: targetLevel
+      })
+    });
+
+    const data = await response.json();
+    
+    // Update output
+    document.getElementById('adaptedOutput').innerHTML = 
+      `<p>${data.converted_text.replace(/\n/g, '</p><p>')}</p>`;
+    
+    // Enable output buttons
+    document.getElementById('copyText').disabled = false;
+    document.getElementById('saveAdaptation').disabled = false;
+    
+    // Update complexity metrics
+    document.getElementById('readabilityScore').textContent = 
+      data.complexity_stats?.readability || 'N/A';
+
+  } catch (error) {
+    document.getElementById('adaptedOutput').innerHTML = `
+      <div class="alert alert-danger">${error.message}</div>
+    `;
+  }
 });
 </script>
 {% endblock %}
