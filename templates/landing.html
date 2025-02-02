@@ -1,17 +1,21 @@
 {% extends "base.html" %}
 
-{% block title %}Welcome to RevAIse{% endblock %}
+{% block title %}Welcome{% endblock %}
 
 {% block content %}
-<section class="hero-section">
-  <div class="hero-overlay"></div>
-  <div class="hero-content text-center">
-    <h1 class="display-3 fw-bold">Welcome to RevAIse</h1>
-    <p class="lead">Your one-stop solution for converting YouTube videos into slides and adapting text for various reading levels.</p>
-    <div class="mt-4">
-      <a href="{{ url_for('youtube_tool') }}" class="btn btn-primary btn-lg me-2">YouTube to Slides</a>
-      <a href="{{ url_for('convert_tool') }}" class="btn btn-success btn-lg">Adapt Text</a>
+<header class="w3-container w3-padding-32 w3-center w3-black" id="home">
+  <div class="w3-overlay" style="background-color:rgba(0,0,0,0.6);"></div>
+  <div class="w3-content" style="position:relative; z-index:1;">
+    <h1 class="w3-jumbo">Welcome to RevAIse</h1>
+    <p class="w3-large">Your one-stop tool for converting YouTube videos to slides and adapting text for different reading levels.</p>
+    <div class="w3-margin-top">
+      <a href="{{ url_for('youtube_tool') }}" class="w3-button w3-blue w3-round-large">YouTube to Slides</a>
+      <a href="{{ url_for('convert_tool') }}" class="w3-button w3-green w3-round-large">Adapt Text</a>
     </div>
+    <img src="{{ url_for('static', filename='hero-image.jpg') }}" alt="Hero Image" class="w3-image" style="max-width:100%; margin-top:20px;">
   </div>
-</section>
+</header>
+{% endblock %}
+
+{% block scripts %}
 {% endblock %}
