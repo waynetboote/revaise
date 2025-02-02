@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Activity Ideas Generator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <header>
+        <h1>Activity Ideas Generator</h1>
+    </header>
+    
+    <main>
+        {% if error %}
+            <div class="error">{{ error }}</div>
+        {% endif %}
+        <form method="POST" action="{{ url_for('ideas') }}">
+            <div>
+                <label for="topic">Topic:</label>
+                <input type="text" name="topic" id="topic" value="{{ topic|default('') }}" required>
+            </div>
+            <div>
+                <label for="year_group">Year Group:</label>
+                <input type="text" name="year_group" id="year_group" value="{{ year_group|default('') }}" required>
+            </div>
+            <div>
+                <label for="additional">Additional Information (optional):</label>
+                <textarea name="additional" id="additional">{{ additional|default('') }}</textarea>
+            </div>
+            <div>
+                <button type="submit">Generate Ideas</button>
+            </div>
+        </form>
+
+        {% if ideas %}
+            <section id="ideas-result">
+                <h2>Generated Activity Ideas</h2>
+                <pre>{{ ideas }}</pre>
+                <form method="POST" action="{{ url_for('ideas') }}">
+                    <!-- Hidden fields to resubmit the same inputs -->
+                    <input type="hidden" name="topic" value="{{ topic }}">
+                    <input type="hidden" name="year_group" value="{{ year_group }}">
+                    <input type="hidden" name="additional" value="{{ additional }}">
+                    <button type="submit">Get New Ideas</button>
+                </form>
+            </section>
+        {% endif %}
+    </main>
+    
+    <footer>
+        <p>&copy; {{ current_year }} Your App Name</p>
+    </footer>
+</body>
+</html>
