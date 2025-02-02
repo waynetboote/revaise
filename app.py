@@ -17,8 +17,7 @@ openai.api_key = os.environ.get("OPENAI_API_KEY")
 
 @app.route('/')
 def home():
-    # You can choose a landing page or redirect to one of the tools; here, we'll redirect to the YouTube tool.
-    return redirect(url_for('youtube_tool'))
+    return render_template('landing.html', current_year=datetime.now().year, active_page="home")
 
 @app.route('/youtube')
 def youtube_tool():
