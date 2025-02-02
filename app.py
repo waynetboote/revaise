@@ -1,3 +1,7 @@
+import audioop
+import sys
+sys.modules["pyaudioop"] = audioop
+
 from flask import Flask, request, jsonify, render_template, redirect, url_for
 from youtube_transcript import get_transcript
 from summarization import summarize_text
@@ -8,9 +12,6 @@ import os
 import openai
 import logging
 from datetime import datetime
-import audioop
-import sys
-sys.modules["pyaudioop"] = audioop
 
 app = Flask(__name__)
 logging.basicConfig(level=logging.DEBUG)
