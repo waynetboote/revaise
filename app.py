@@ -1,18 +1,15 @@
-# app.py
 from flask import Flask, request, jsonify, render_template, redirect, url_for
 from youtube_transcript import get_transcript
 from summarization import summarize_text
 from ppt_generator import create_pptx
 from google_slides_creator import create_google_slides
-import os
-import openai
-import logging
+import os, openai, logging
 from datetime import datetime
 
 app = Flask(__name__)
 logging.basicConfig(level=logging.DEBUG)
 
-# Configure OpenAI API key from environment
+# Configure OpenAI API key from environment variables
 openai.api_key = os.environ.get("OPENAI_API_KEY")
 
 @app.route('/')
@@ -21,11 +18,11 @@ def home():
 
 @app.route('/youtube')
 def youtube_tool():
-    return render_template('youtube.html', active_page='youtube', current_year=datetime.now().year)
+    return render_template('youtube.html', current_year=datetime.now().year, active_page="youtube")
 
 @app.route('/convert')
 def convert_tool():
-    return render_template('convert.html', active_page='convert', current_year=datetime.now().year)
+    return render_template('convert.html', current_year=datetime.now().year, active_page="convert")
 
 @app.route('/generate_summary', methods=['POST'])
 def generate_summary():
@@ -64,7 +61,6 @@ def convert_text():
         app.logger.error("Missing input text or year group")
         return jsonify({"error": "Missing input text or year group"}), 400
 
-    # Construct a prompt for ChatGPT
     prompt = (
         f"Adapt the following text to be appropriate for {year_group}. "
         "Ensure that the vocabulary, sentence structure, and style are suitable for the reading level typically expected at that year group. "
@@ -75,10 +71,7 @@ def convert_text():
         response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
             messages=[
-                {
-                    "role": "system",
-                    "content": "You are a helpful assistant that specializes in adapting text for different reading levels."
-                },
+                {"role": "system", "content": "You are a helpful assistant that specializes in adapting text for different reading levels."},
                 {"role": "user", "content": prompt},
             ],
             temperature=0.7,
