@@ -1,0 +1,13 @@
+<!-- templates/podcast_wait.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="refresh" content="5;url={{ url_for('podcast_status', job_id=job_id) }}">
+    <title>Podcast Generation In Progress</title>
+</head>
+<body>
+    <h1>Generating your podcast...</h1>
+    <p>Your podcast is being generated. This may take a moment. Please wait, or <a href="{{ url_for('podcast_status', job_id=job_id) }}">click here</a> to refresh.</p>
+</body>
+</html>
