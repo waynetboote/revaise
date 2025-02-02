@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Podcast Generator{% endblock %}
+{% block content %}
+<div class="w3-container w3-padding-32">
+  <h2>Podcast Generator</h2>
+  {% if error %}
+    <p class="w3-text-red">{{ error }}</p>
+  {% endif %}
+  <form method="POST" action="{{ url_for('podcast_tool') }}">
+    <div class="w3-margin-bottom">
+      <label for="urls">Enter one or more URLs (each on a new line):</label>
+      <textarea name="urls" id="urls" class="w3-input w3-border" rows="6" placeholder="https://example.com/page1
+https://example.com/page2" required></textarea>
+    </div>
+    <button type="submit" class="w3-button w3-blue w3-round-large">Generate Podcast Feed</button>
+  </form>
+</div>
+{% endblock %}
