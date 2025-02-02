@@ -1,24 +1,23 @@
-# app.py
 from flask import Flask, request, jsonify, render_template, redirect, url_for
 from youtube_transcript import get_transcript
 from summarization import summarize_text
 from ppt_generator import create_pptx
 from google_slides_creator import create_google_slides
-import os, openai, logging
-from datetime import datetime
-
-# Import Podcastfy’s function
 from podcastfy.client import generate_podcast
+import os
+import openai
+import logging
+from datetime import datetime
 
 app = Flask(__name__)
 logging.basicConfig(level=logging.DEBUG)
 
-# Configure environment variables (example for OpenAI; Podcastfy may need others)
+# Configure OpenAI API key from environment variables
 openai.api_key = os.environ.get("OPENAI_API_KEY")
 
 @app.route('/')
 def home():
-    # You can choose to have a landing page or redirect to one tool.
+    # Render the landing page which provides links to all tools.
     return render_template('landing.html', current_year=datetime.now().year, active_page="home")
 
 @app.route('/youtube')
@@ -29,28 +28,23 @@ def youtube_tool():
 def convert_tool():
     return render_template('convert.html', current_year=datetime.now().year, active_page="convert")
 
-# New route for Podcastfy integration
 @app.route('/podcast', methods=['GET', 'POST'])
 def podcast_tool():
     if request.method == 'POST':
-        # Expecting a comma‐separated list of URLs or a newline‐separated list.
+        # Retrieve the input from the form (assumed to be one or more URLs separated by newlines)
         input_urls = request.form.get("urls")
         if not input_urls:
             return render_template('podcast.html', error="Please enter one or more URLs.", current_year=datetime.now().year, active_page="podcast")
-        # Split the input into a list of URLs; adjust the separator as needed
         urls = [url.strip() for url in input_urls.splitlines() if url.strip()]
         try:
-            # Use Podcastfy to generate the podcast
+            # Call Podcastfy to generate the podcast audio file (or feed)
             audio_file = generate_podcast(urls=urls)
-            # audio_file will typically be the path or URL of the generated audio.
             return render_template('podcast_result.html', audio_file=audio_file, current_year=datetime.now().year, active_page="podcast")
         except Exception as e:
             app.logger.error("Error generating podcast feed: %s", str(e))
             return render_template('podcast.html', error=str(e), current_year=datetime.now().year, active_page="podcast")
     else:
         return render_template('podcast.html', current_year=datetime.now().year, active_page="podcast")
-
-# Existing routes for transcript and text conversion remain unchanged...
 
 @app.route('/generate_summary', methods=['POST'])
 def generate_summary():
