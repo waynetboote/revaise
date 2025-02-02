@@ -1,3 +1,2 @@
 web: gunicorn app:app --timeout 60
-worker: rq worker --with-scheduler
-
+worker: rq worker default
