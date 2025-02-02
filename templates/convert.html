@@ -3,66 +3,54 @@
 {% block title %}Adapt Text{% endblock %}
 
 {% block content %}
-<section id="text-converter">
-  <div class="card shadow">
-    <div class="card-body">
-      <h2 class="card-title text-center mb-4 section-title">Adapt Text for Reading Level</h2>
-      <form id="convertForm">
-        <div class="mb-3">
-          <textarea class="form-control" name="input_text" placeholder="Paste your text here..." rows="6" required></textarea>
-        </div>
-        <div class="mb-3">
-          <label for="yearGroup" class="form-label">Select Year Group:</label>
-          <select class="form-select" name="year_group" id="yearGroup" required>
-            <option value="Year 1">Year 1</option>
-            <option value="Year 2">Year 2</option>
-            <option value="Year 3">Year 3</option>
-            <option value="Year 4">Year 4</option>
-            <option value="Year 5">Year 5</option>
-            <option value="Year 6">Year 6</option>
-            <option value="Year 7">Year 7</option>
-            <option value="Year 8">Year 8</option>
-            <option value="Year 9">Year 9</option>
-            <option value="Year 10">Year 10</option>
-            <option value="Year 11">Year 11</option>
-          </select>
-        </div>
-        <div class="d-grid">
-          <button type="submit" class="btn btn-success btn-lg">Convert</button>
-        </div>
-      </form>
-      <!-- Converted Output Container -->
-      <div id="convertedOutput" class="mt-3"></div>
-    </div>
-  </div>
-</section>
+<div class="w3-card w3-padding-32">
+  <h2 class="w3-center">Adapt Text for Reading Level</h2>
+  <form id="convertForm">
+    <textarea name="input_text" placeholder="Paste your text here..." class="w3-input w3-border" rows="6" required></textarea>
+    <select name="year_group" class="w3-select w3-border w3-margin-top" required>
+      <option value="" disabled selected>Select Year Group</option>
+      <option value="Year 1">Year 1</option>
+      <option value="Year 2">Year 2</option>
+      <option value="Year 3">Year 3</option>
+      <option value="Year 4">Year 4</option>
+      <option value="Year 5">Year 5</option>
+      <option value="Year 6">Year 6</option>
+      <option value="Year 7">Year 7</option>
+      <option value="Year 8">Year 8</option>
+      <option value="Year 9">Year 9</option>
+      <option value="Year 10">Year 10</option>
+      <option value="Year 11">Year 11</option>
+    </select>
+    <button type="submit" class="w3-button w3-green w3-round-large w3-margin-top">Convert</button>
+  </form>
+  <div id="convertedOutput" class="w3-margin-top"></div>
+</div>
 {% endblock %}
 
 {% block scripts %}
 <script>
-  // Text Adaptation Form handling
-  document.getElementById("convertForm").addEventListener("submit", function (event) {
-    event.preventDefault();
-    document.getElementById("convertedOutput").innerHTML = "";
-    const inputText = event.target.input_text.value;
-    const yearGroup = event.target.year_group.value;
-    fetch("/convert_text", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ input_text: inputText, year_group: yearGroup })
-    })
-    .then(response => {
-      if (!response.ok) {
-        return response.json().then(errData => { throw new Error(errData.error || "Conversion failed"); });
-      }
-      return response.json();
-    })
-    .then(data => {
-      document.getElementById("convertedOutput").innerHTML = "<h4>Converted Text:</h4><p>" + data.converted_text + "</p>";
-    })
-    .catch(error => {
-      document.getElementById("convertedOutput").innerHTML = "<p class='text-danger'>Error: " + error.message + "</p>";
-    });
+document.getElementById("convertForm").addEventListener("submit", function(event) {
+  event.preventDefault();
+  document.getElementById("convertedOutput").innerHTML = "";
+  const inputText = event.target.input_text.value;
+  const yearGroup = event.target.year_group.value;
+  fetch("/convert_text", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ input_text: inputText, year_group: yearGroup })
+  })
+  .then(response => {
+    if (!response.ok) {
+      return response.json().then(errData => { throw new Error(errData.error || "Conversion failed"); });
+    }
+    return response.json();
+  })
+  .then(data => {
+    document.getElementById("convertedOutput").innerHTML = "<h4>Converted Text:</h4><p>" + data.converted_text + "</p>";
+  })
+  .catch(error => {
+    document.getElementById("convertedOutput").innerHTML = "<p class='w3-text-red'>Error: " + error.message + "</p>";
   });
+});
 </script>
 {% endblock %}
