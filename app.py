@@ -33,6 +33,10 @@ def youtube_tool():
 def convert_tool():
     return render_template('convert.html', current_year=datetime.now().year, active_page="convert")
 
+@app.route('/terms')
+def terms():
+    return render_template('terms.html', current_year=datetime.now().year)
+
 @app.route('/podcast', methods=['GET', 'POST'])
 def podcast_tool():
     if request.method == 'POST':
