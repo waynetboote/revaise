@@ -1,42 +1,127 @@
 {% extends "base.html" %}
 
-{% block title %}YouTube to Slides{% endblock %}
+{% block title %}YouTube to Slides Converter{% endblock %}
 
 {% block content %}
-<div class="w3-card w3-padding-32">
-  <h2 class="w3-center">Generate Slides from YouTube</h2>
-  <form id="summaryForm">
-    <input type="text" name="youtube_url" placeholder="Enter YouTube URL" class="w3-input w3-border" required>
-    <button type="submit" class="w3-button w3-blue w3-round-large w3-margin-top">Generate Slides</button>
-  </form>
-  <p id="errorMessage" class="w3-text-red"></p>
+<div class="container mt-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+          <h2 class="h4 mb-0">YouTube to Lesson Slides</h2>
+        </div>
+        
+        <div class="card-body">
+          <form id="youtubeForm" novalidate>
+            <div class="mb-4">
+              <label for="youtubeUrl" class="form-label fw-bold">YouTube Video URL</label>
+              <input type="url" class="form-control form-control-lg" 
+                     id="youtubeUrl" name="youtube_url" 
+                     placeholder="https://www.youtube.com/watch?v=..." 
+                     pattern="^(https?\:\/\/)?(www\.)?(youtube\.com|youtu\.?be)\/.+" 
+                     required>
+              <div class="invalid-feedback">
+                Please enter a valid YouTube URL
+              </div>
+            </div>
+
+            <div class="row g-3 mb-4">
+              <div class="col-md-6">
+                <label for="gradeLevel" class="form-label">Target Grade Level</label>
+                <select class="form-select" id="gradeLevel" name="grade_level">
+                  <option value="elementary">Elementary School</option>
+                  <option value="middle">Middle School</option>
+                  <option value="high">High School</option>
+                  <option value="college">College Level</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label for="slideCount" class="form-label">Slides to Generate</label>
+                <input type="number" class="form-control" 
+                       id="slideCount" name="slide_count" 
+                       min="5" max="20" value="10">
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-lg w-100">
+              <span class="submit-text">Generate Slides</span>
+              <span class="spinner-border spinner-border-sm d-none" 
+                    role="status" aria-hidden="true"></span>
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Results Section -->
+      <div id="resultsSection" class="mt-4 d-none">
+        <div class="card shadow">
+          <div class="card-body">
+            <h3 class="h5 mb-3">Generated Content</h3>
+            <div id="previewArea" class="border p-3 mb-3"></div>
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+              <button class="btn btn-success" id="downloadPPT">
+                <i class="bi bi-file-ppt me-2"></i>Download PPT
+              </button>
+              <button class="btn btn-google" id="exportGoogle">
+                <i class="bi bi-google me-2"></i>Export to Google Slides
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
 <script>
-document.getElementById("summaryForm").addEventListener("submit", function(event) {
-  event.preventDefault();
-  document.getElementById("errorMessage").innerText = "";
-  const youtubeUrl = event.target.youtube_url.value;
-  fetch("/generate_summary", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ youtube_url: youtubeUrl })
-  })
-  .then(response => {
-    if (!response.ok) {
-      return response.json().then(errData => { throw new Error(errData.error || "Network response was not OK"); });
-    }
-    return response.json();
-  })
-  .then(data => {
-    console.log("Data received:", data);
-    // Display results as needed—for example, you might show links or status messages.
-  })
-  .catch(error => {
-    document.getElementById("errorMessage").innerText = "Error: " + error.message;
-  });
+document.getElementById('youtubeForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  
+  const form = e.target;
+  const submitBtn = form.querySelector('button[type="submit"]');
+  const spinner = submitBtn.querySelector('.spinner-border');
+  const submitText = submitBtn.querySelector('.submit-text');
+  
+  if (!form.checkValidity()) {
+    form.classList.add('was-validated');
+    return;
+  }
+
+  try {
+    submitText.textContent = 'Processing...';
+    spinner.classList.remove('d-none');
+    submitBtn.disabled = true;
+
+    const response = await fetch('/generate_summary', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        youtube_url: form.youtubeUrl.value,
+        grade_level: form.gradeLevel.value,
+        slide_count: form.slideCount.value
+      })
+    });
+
+    if (!response.ok) throw new Error(await response.text());
+    
+    const data = await response.json();
+    document.getElementById('previewArea').innerHTML = 
+      `<h4>${data.summary.split('\n')[0]}</h4>` +
+      `<ul>${data.summary.split('\n').slice(1).map(line => 
+        `<li>${line.replace('- ', '')}</li>`).join('')}</ul>`;
+    
+    document.getElementById('resultsSection').classList.remove('d-none');
+    window.scrollTo({ top: document.getElementById('resultsSection').offsetTop, behavior: 'smooth' });
+
+  } catch (error) {
+    showToast(`Error: ${error.message}`, 'danger');
+  } finally {
+    submitText.textContent = 'Generate Slides';
+    spinner.classList.add('d-none');
+    submitBtn.disabled = false;
+  }
 });
 </script>
 {% endblock %}
