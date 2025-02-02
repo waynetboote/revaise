@@ -13,7 +13,7 @@ from flask_caching import Cache
 from redis import Redis
 from rq import Queue
 from rq.job import Job
-from rq.retry import Retry
+from rq.job import Retry
 import openai
 
 # Local modules
