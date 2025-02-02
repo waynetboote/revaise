@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome to RevAIse{% endblock %}
+
+{% block content %}
+<section class="hero-section">
+  <div class="hero-overlay"></div>
+  <div class="hero-content text-center">
+    <h1 class="display-3 fw-bold">Welcome to RevAIse</h1>
+    <p class="lead">Your one-stop solution for converting YouTube videos into slides and adapting text for various reading levels.</p>
+    <div class="mt-4">
+      <a href="{{ url_for('youtube_tool') }}" class="btn btn-primary btn-lg me-2">YouTube to Slides</a>
+      <a href="{{ url_for('convert_tool') }}" class="btn btn-success btn-lg">Adapt Text</a>
+    </div>
+  </div>
+</section>
+{% endblock %}
