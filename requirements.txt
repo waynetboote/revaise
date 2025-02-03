@@ -5,7 +5,7 @@ Werkzeug==3.0.1
 gunicorn==21.2.0
 gevent==23.9.1
 openai==1.61.0
-tiktoken
+tiktoken>=0.7.0
 transformers==4.40.0
 torch==2.0.1+cpu
 nltk==3.8.1
