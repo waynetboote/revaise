@@ -20,5 +20,5 @@ certifi==2024.2.2
 flask-caching==2.1.0
 reportlab==4.1.0
 flask-limiter==3.10.1  # Pinned version
-podcastfy
+podcastfy @ git+https://github.com/souzatharsis/podcastfy.git@main
 
