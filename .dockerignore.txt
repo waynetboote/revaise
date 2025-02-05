@@ -1,0 +1,27 @@
+# Ignore Git-related files
+.git
+.gitignore
+
+# Ignore documentation, tests, and other development files
+docs
+tests
+*.md
+
+# Ignore local data, cache, or temporary files
+data
+models
+tmp
+cache
+pip_cache
+
+# Ignore environment files
+.env
+.env.*
+
+# Ignore build artifacts and distribution folders
+build
+dist
+
+# Ignore logs and backup files
+*.log
+*.bak
