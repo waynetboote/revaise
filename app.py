@@ -6,6 +6,9 @@ import ssl
 from datetime import datetime
 from functools import wraps
 
+from gevent import monkey
+monkey.patch_all()
+
 from flask import Flask, request, jsonify, render_template, redirect, url_for, send_file
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
