@@ -36,6 +36,7 @@
                     type="button" 
                     data-bs-toggle="collapse" 
                     data-bs-target="#mainNav"
+                    aria-controls="mainNav" 
                     aria-expanded="false" 
                     aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
@@ -44,12 +45,13 @@
             <div class="collapse navbar-collapse" id="mainNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('youtube_tool') }}"
+                        <!-- Updated endpoint from 'youtube_tool' to 'podcast_tool' -->
+                        <a class="nav-link" href="{{ url_for('podcast_tool') }}"
                            aria-current="page">
                            YouTube to Slides
                         </a>
                     </li>
-                    <!-- Additional nav items -->
+                    <!-- Additional nav items can be added here -->
                 </ul>
             </div>
         </div>
@@ -70,10 +72,10 @@
                         <li><a href="{{ url_for('terms') }}" class="text-light">Terms of Service</a></li>
                     </ul>
                 </div>
-                <!-- Additional footer columns -->
+                <!-- Additional footer columns can be added here -->
             </div>
             <div class="text-center mt-3">
-                <p class="mb-0">&copy; {{ current_year }} RevAIse. All rights reserved.</p>
+                <p class="mb-0">&copy; {{ current_year if current_year else '2025' }} RevAIse. All rights reserved.</p>
             </div>
         </div>
     </footer>
