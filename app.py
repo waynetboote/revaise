@@ -53,10 +53,10 @@ def get_redis_connection():
     return Redis.from_url(
         os.environ.get('REDIS_URL', 'redis://localhost:6379'),
         ssl=True,
-        ssl_cert_reqs=ssl.CERT_REQUIRED,
-        ssl_ca_certs=certifi.where(),
+        ssl_cert_reqs=ssl.CERT_NONE,  # disable certificate verification
         decode_responses=False
     )
+
 
 try:
     redis_conn = get_redis_connection()
