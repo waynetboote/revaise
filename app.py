@@ -39,7 +39,7 @@ ALLOWED_DOMAINS = {
     'youtube.com',
     'youtu.be',
     'soundcloud.com',
-    'spotify.com',
+    'spoty.com',
     'your-school-domain.edu'  # Add institutional domains
 }
 
@@ -56,7 +56,7 @@ def get_redis_connection():
     return Redis.from_url(
         os.environ.get('REDIS_URL', 'redis://localhost:6379'),
         ssl=True,
-        ssl_cert_reqs=ssl.CERT_NONE,  # disable certificate verification
+        ssl_cert_reqs=ssl.CERT_NONE,  # disable certicate verication
         decode_responses=False
     )
 
@@ -76,16 +76,16 @@ limiter.storage_url = os.environ.get('REDIS_URL', 'redis://localhost:6379')
 # Security middleware
 @app.before_request
 def enforce_https():
-    if os.environ.get('FLASK_ENV') == 'production' and not request.is_secure:
+     os.environ.get('FLASK_ENV') == 'production' and not request.is_secure:
         return redirect(request.url.replace('http://', 'https://'))
 
 # Rate limit headers
 @app.after_request
 def add_rate_limit_headers(response):
     view_func = app.view_functions.get(request.endpoint)
-    if view_func:
+     view_func:
         limit = limiter.limiters[0].check_request_limit(view_func)
-        if limit:
+         limit:
             response.headers.extend({
                 'X-RateLimit-Limit': limit.limit,
                 'X-RateLimit-Remaining': limit.remaining,
@@ -104,7 +104,7 @@ def home():
 
 @app.route('/health')
 def health_check():
-    return jsonify(status="ok", timestamp=datetime.utcnow()), 200
+    return jsony(status="ok", timestamp=datetime.utcnow()), 200
 
 @app.route('/generate_summary', methods=['POST'])
 @limiter.limit("10/hour")
@@ -113,19 +113,19 @@ def generate_summary():
     data = request.get_json()
     youtube_url = data.get('youtube_url')
     
-    if not youtube_url:
-        return jsonify({"error": "No URL provided"}), 400
+     not youtube_url:
+        return jsony({"error": "No URL provided"}), 400
 
     try:
         transcript = get_transcript(youtube_url)
-        if "Error" in transcript:
-            return jsonify({"error": transcript}), 400
+         "Error" in transcript:
+            return jsony({"error": transcript}), 400
 
         summary = summarize_text(transcript)
         ppt_file = create_pptx(summary)
         slides_link = create_google_slides(summary)
 
-        return jsonify({
+        return jsony({
             "transcript": transcript,
             "summary": summary,
             "ppt_file": ppt_file,
@@ -134,15 +134,15 @@ def generate_summary():
 
     except Exception as e:
         logger.error(f"Summary generation failed: {str(e)}")
-        return jsonify({"error": "Processing failed"}), 500
+        return jsony({"error": "Processing failed"}), 500
 
 @app.route('/export_pdf', methods=['POST'])
 @limiter.limit("10/hour")
 def export_pdf():
     try:
         data = request.get_json()
-        if not data or 'content' not in data:
-            return jsonify({"error": "No content provided"}), 400
+         not data or 'content' not in data:
+            return jsony({"error": "No content provided"}), 400
             
         pdf_buffer = generate_pdf(data['content'])
         return send_file(
@@ -154,17 +154,17 @@ def export_pdf():
         
     except Exception as e:
         logger.error(f"PDF Export Error: {str(e)}")
-        return jsonify({"error": "Failed to generate PDF"}), 500
+        return jsony({"error": "Failed to generate PDF"}), 500
 
 @app.route('/ideas', methods=['GET', 'POST'])
 @limiter.limit("15/hour")
 def ideas():
-    if request.method == 'POST':
+     request.method == 'POST':
         topic = request.form.get("topic")
         year_group = request.form.get("year_group")
         additional = request.form.get("additional")
 
-        if not topic or not year_group:
+         not topic or not year_group:
             return render_template('ideas.html', 
                                  error="Please provide both topic and year group",
                                  current_year=datetime.now().year)
@@ -173,7 +173,7 @@ def ideas():
             prompt = f"""Generate 5 creative classroom activities for {year_group} students about {topic}.
                         Include learning objectives, materials needed, and time estimates.
                         Format as numbered items with clear sections.
-                        Additional requirements: {additional if additional else 'None'}"""
+                        Additional requirements: {additional  additional else 'None'}"""
 
             response = openai.ChatCompletion.create(
                 model="gpt-3.5-turbo",
@@ -199,15 +199,15 @@ def ideas():
 @app.route('/podcast', methods=['GET', 'POST'])
 @limiter.limit("5/hour")
 def podcast_tool():
-    if request.method == 'POST':
-        urls = [url.strip() for url in request.form.get("urls", "").splitlines() if url.strip()]
+     request.method == 'POST':
+        urls = [url.strip() for url in request.form.get("urls", "").splitlines()  url.strip()]
         validated_urls = []
 
         for url in urls:
             parsed = urlparse(url)
-            if not parsed.scheme:
+             not parsed.scheme:
                 url = f"https://{url}"
-            if parsed.netloc not in ALLOWED_DOMAINS:
+             parsed.netloc not in ALLOWED_DOMAINS:
                 return render_template('podcast.html', 
                                      error=f"Invalid domain: {parsed.netloc}",
                                      current_year=datetime.now().year)
@@ -234,11 +234,11 @@ def podcast_status(job_id):
     try:
         job = Job.fetch(job_id, connection=redis_conn)
         
-        if job.is_finished:
+         job.is_finished:
             return render_template('podcast_result.html', 
                                  audio_file=job.result,
                                  current_year=datetime.now().year)
-        elif job.is_failed:
+        el job.is_failed:
             return render_template('podcast.html', 
                                  error="Generation failed. Please try again.",
                                  current_year=datetime.now().year)
@@ -263,6 +263,14 @@ def ratelimit_handler(e):
 @app.errorhandler(500)
 def internal_error(e):
     return render_template('500.html'), 500
+
+@app.route('/privacy')
+def privacy_policy():
+    return render_template("privacy.html")
+
+@app.route('/terms')
+def terms():
+    return render_template("terms.html")
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
