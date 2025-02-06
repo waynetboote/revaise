@@ -1,4 +1,8 @@
 # app.py
+import ssl
+ssl._create_default_https_context = ssl._create_unverified_context
+from gevent import monkey
+monkey.patch_all()
 import os
 import logging
 import certifi
@@ -6,8 +10,7 @@ import ssl
 from datetime import datetime
 from functools import wraps
 
-from gevent import monkey
-monkey.patch_all()
+
 
 from flask import Flask, request, jsonify, render_template, redirect, url_for, send_file
 from flask_limiter import Limiter
@@ -24,6 +27,8 @@ from summarization import summarize_text
 from ppt_generator import create_pptx, generate_pdf
 from podcastfy.client import generate_podcast
 # (Assuming you also import create_google_slides from somewhere if needed)
+
+logger.info("PYTHONHTTPSVERIFY = %s", os.environ.get('PYTHONHTTPSVERIFY'))
 
 # Initialize Flask application
 app = Flask(__name__)
