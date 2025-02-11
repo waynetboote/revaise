@@ -1,22 +1,25 @@
 # app.py
+import ssl
+# Disable HTTPS certificate verification for development (use with caution in production)
+ssl._create_default_https_context = ssl._create_unverified_context
+
 from gevent import monkey
 monkey.patch_all()
 
 import os
 import logging
 import certifi
-import ssl
 from datetime import datetime
+from functools import wraps
+from urllib.parse import urlparse
 
 from flask import Flask, request, jsonify, render_template, redirect, url_for, send_file
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_caching import Cache
 from redis import Redis
-from rq import Queue, Retry
-from rq.job import Job
+from rq import Queue, Job, Retry
 import openai
-from urllib.parse import urlparse
 
 # Local modules
 from youtube_transcript import get_transcript
@@ -36,8 +39,7 @@ app.config.update(
     SECRET_KEY=os.environ.get('FLASK_SECRET_KEY', os.urandom(24)),
     JSONIFY_PRETTYPRINT_REGULAR=False,
     CACHE_TYPE='RedisCache',
-    CACHE_REDIS_URL=os.environ.get('REDIS_URL', 'redis://localhost:6379'),
-    RATELIMIT_HEADERS_ENABLED=True  # Enable built-in rate limit headers
+    CACHE_REDIS_URL=os.environ.get('REDIS_URL', 'redis://localhost:6379')
 )
 
 # Allowed domains for podcast sources
@@ -46,20 +48,25 @@ ALLOWED_DOMAINS = {
     'youtu.be',
     'soundcloud.com',
     'spoty.com',
-    'your-school-domain.edu'
+    'your-school-domain.edu'  # Add institutional domains as needed
 }
 
-# Initialize extensions
-cache = Cache(app)
-limiter = Limiter(app, key_func=get_remote_address)
+# Initialize caching
+cache = Cache()
+cache.init_app(app)
 
-# Configure Redis connection
+# Initialize Flask-Limiter
+# NOTE: The Limiter class expects the key function as a keyword argument.
+limiter = Limiter(key_func=get_remote_address, app=app)
+# You can also set a storage backend by configuring limiter.storage_url if needed:
+limiter.storage_url = os.environ.get('REDIS_URL', 'redis://localhost:6379')
+
+# Configure Redis connection for RQ (using SSL but disabling certificate verification)
 def get_redis_connection():
-    # Use ssl_cert_reqs=ssl.CERT_NONE to bypass certificate verification for Heroku's self-signed cert
     return Redis.from_url(
         os.environ.get('REDIS_URL', 'redis://localhost:6379'),
         ssl=True,
-        ssl_cert_reqs=ssl.CERT_NONE,
+        ssl_cert_reqs=ssl.CERT_NONE,  # Disables certificate verification (use with caution)
         decode_responses=False
     )
 
@@ -71,18 +78,26 @@ except Exception as e:
     logger.critical("Redis connection failed: %s", e)
     raise
 
-# Enforce HTTPS in production
+# Security middleware: enforce HTTPS in production
 @app.before_request
 def enforce_https():
     if os.environ.get('FLASK_ENV') == 'production' and not request.is_secure:
-        return redirect(request.url.replace("http://", "https://"))
+        return redirect(request.url.replace('http://', 'https://'))
+
+# Optional: Rate limit headers can be added here if desired.
+@app.after_request
+def add_rate_limit_headers(response):
+    # (If you wish to customize headers, do so here. For now, we'll pass through.)
+    return response
 
 # Routes
 @app.route('/')
 @limiter.limit("10/minute")
 @cache.cached(timeout=300)
 def home():
-    return render_template('landing.html', current_year=datetime.now().year, active_page="home")
+    return render_template('landing.html', 
+                           current_year=datetime.now().year,
+                           active_page="home")
 
 @app.route('/health')
 def health_check():
@@ -91,18 +106,18 @@ def health_check():
 @app.route('/generate_summary', methods=['POST'])
 @limiter.limit("10/hour")
 @cache.cached(timeout=3600, query_string=True)
-def generate_summary_route():
+def generate_summary():
     data = request.get_json()
     youtube_url = data.get('youtube_url')
     if not youtube_url:
         return jsonify({"error": "No URL provided"}), 400
-    try:
-        # Get transcript result as a dict with 'success' and either 'transcript' or 'error'
-        transcript_result = get_transcript(youtube_url)
-        if not transcript_result.get("success", False):
-            return jsonify({"error": transcript_result.get("error", "Error fetching transcript")}), 400
 
-        transcript = transcript_result["transcript"]
+    transcript_result = get_transcript(youtube_url)
+    if not transcript_result.get("success", False):
+        return jsonify({"error": transcript_result.get("error", "Error fetching transcript")}), 400
+
+    transcript = transcript_result["transcript"]
+    try:
         summary = summarize_text(transcript)
         ppt_file = create_pptx(summary)
         slides_link = create_google_slides(summary)
@@ -113,12 +128,12 @@ def generate_summary_route():
             "google_slides_link": slides_link
         })
     except Exception as e:
-        logger.error("Summary generation failed: %s", str(e))
+        logger.error(f"Summary generation failed: {str(e)}")
         return jsonify({"error": "Processing failed"}), 500
 
 @app.route('/export_pdf', methods=['POST'])
 @limiter.limit("10/hour")
-def export_pdf_route():
+def export_pdf():
     try:
         data = request.get_json()
         if not data or 'content' not in data:
@@ -131,33 +146,36 @@ def export_pdf_route():
             as_attachment=True
         )
     except Exception as e:
-        logger.error("PDF Export Error: %s", str(e))
+        logger.error(f"PDF Export Error: {str(e)}")
         return jsonify({"error": "Failed to generate PDF"}), 500
 
 @app.route('/ideas', methods=['GET', 'POST'])
 @limiter.limit("15/hour")
 def ideas():
     if request.method == 'POST':
-        topic = request.form.get("topic")
-        year_group = request.form.get("year_group")
-        additional = request.form.get("additional")
+        data = request.get_json() or {}
+        topic = data.get("topic") or request.form.get("topic")
+        year_group = data.get("year_group") or request.form.get("year_group")
+        additional = data.get("learning_goals") or request.form.get("learning_goals")
         if not topic or not year_group:
-            return render_template('ideas.html', error="Please provide both topic and year group", current_year=datetime.now().year)
+            return jsonify({"error": "Please provide both topic and year group"}), 400
         try:
-            prompt = f"""Generate 5 creative classroom activities for {year_group} students about {topic}.
-Include learning objectives, materials needed, and time estimates.
-Format as numbered items with clear sections.
-Additional requirements: {additional if additional else 'None'}"""
+            prompt = (
+                f"Generate 5 creative classroom activities for {year_group} students about {topic}.\n"
+                "Include learning objectives, materials needed, and time estimates.\n"
+                "Format as numbered items with clear sections.\n"
+                f"Additional requirements: {additional if additional else 'None'}"
+            )
             response = openai.ChatCompletion.create(
                 model="gpt-3.5-turbo",
                 messages=[{"role": "user", "content": prompt}],
-                temperature=0.7
+                temperature=0.7,
             )
             ideas_response = response['choices'][0]['message']['content'].strip()
-            return render_template('ideas.html', ideas=ideas_response, topic=topic, year_group=year_group, current_year=datetime.now().year)
+            return jsonify({"ideas": ideas_response})
         except Exception as e:
-            logger.error("Activity generation error: %s", str(e))
-            return render_template('ideas.html', error="Failed to generate activities", current_year=datetime.now().year)
+            logger.error(f"Activity generation error: {str(e)}")
+            return jsonify({"error": "Failed to generate activities"}), 500
     return render_template('ideas.html', current_year=datetime.now().year)
 
 @app.route('/podcast', methods=['GET', 'POST'])
@@ -172,7 +190,7 @@ def podcast_tool():
                 url = f"https://{url}"
                 parsed = urlparse(url)
             if parsed.netloc.lower() not in ALLOWED_DOMAINS:
-                return render_template('podcast.html', error=f"Invalid domain: {parsed.netloc}", current_year=datetime.now().year)
+                return jsonify({"error": f"Invalid domain: {parsed.netloc}"}), 400
             validated_urls.append(url)
         try:
             job = q.enqueue(
@@ -181,10 +199,10 @@ def podcast_tool():
                 job_timeout=600,
                 retry=Retry(max=3, interval=[10, 30, 60])
             )
-            return redirect(url_for('podcast_status', job_id=job.id))
+            return jsonify({"job_id": job.id})
         except Exception as e:
-            logger.error("Podcast job failed: %s", str(e))
-            return render_template('podcast.html', error="Failed to start generation", current_year=datetime.now().year)
+            logger.error(f"Podcast job failed: {str(e)}")
+            return jsonify({"error": "Failed to start generation"}), 500
     return render_template('podcast.html', current_year=datetime.now().year)
 
 @app.route('/podcast_status/<job_id>')
@@ -195,9 +213,9 @@ def podcast_status(job_id):
             return render_template('podcast_result.html', audio_file=job.result, current_year=datetime.now().year)
         elif job.is_failed:
             return render_template('podcast.html', error="Generation failed. Please try again.", current_year=datetime.now().year)
-        return render_template('podcast_wait.html', job_id=job.id, current_year=datetime.now().year)
+        return render_template('podcast_wait.html', job_id=job.id)
     except Exception as e:
-        logger.error("Status check error: %s", str(e))
+        logger.error(f"Status check error: {str(e)}")
         return redirect(url_for('podcast_tool'))
 
 @app.route('/privacy')
@@ -207,18 +225,6 @@ def privacy_policy():
 @app.route('/terms')
 def terms():
     return render_template("terms.html")
-
-@app.errorhandler(404)
-def page_not_found(e):
-    return render_template('404.html'), 404
-
-@app.errorhandler(429)
-def ratelimit_handler(e):
-    return render_template('429.html'), 429
-
-@app.errorhandler(500)
-def internal_error(e):
-    return render_template('500.html'), 500
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
