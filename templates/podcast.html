@@ -1,5 +1,4 @@
 {% extends "base.html" %}
-
 {% block title %}Podcast Generator{% endblock %}
 
 {% block content %}
@@ -10,24 +9,19 @@
         <div class="card-header bg-success text-white">
           <h2 class="h4 mb-0">Educational Podcast Creator</h2>
         </div>
-
         <div class="card-body">
           <form id="podcastForm" method="POST">
             <div class="mb-4">
               <label for="contentUrls" class="form-label fw-bold">
                 Input Sources (YouTube URLs or Text URLs)
               </label>
-              <textarea class="form-control" 
-                        id="contentUrls" 
-                        name="urls" 
-                        rows="4"
-                        placeholder="Enter one URL per line&#10;Example:&#10;https://www.youtube.com/watch?v=...&#10;https://example.com/article.txt"
+              <textarea class="form-control" id="contentUrls" name="urls" rows="4"
+                        placeholder="Enter one URL per line&#10;Example: https://www.youtube.com/watch?v=...&#10;https://example.com/article.txt"
                         required></textarea>
               <div class="form-text">
                 Supported sources: YouTube videos, text files, and web articles
               </div>
             </div>
-
             <div class="row g-3 mb-4">
               <div class="col-md-6">
                 <label for="duration" class="form-label">Episode Duration</label>
@@ -46,7 +40,6 @@
                 </select>
               </div>
             </div>
-
             <div class="d-grid">
               <button type="submit" class="btn btn-success btn-lg">
                 <i class="bi bi-mic me-2"></i>Generate Podcast
@@ -55,7 +48,6 @@
           </form>
         </div>
       </div>
-
       <!-- Status Section -->
       <div id="podcastStatus" class="mt-4"></div>
     </div>
@@ -67,36 +59,28 @@
 <script>
 document.getElementById('podcastForm').addEventListener('submit', async (e) => {
   e.preventDefault();
-  
   const form = e.target;
   const submitBtn = form.querySelector('button[type="submit"]');
   const originalBtnText = submitBtn.innerHTML;
   
   try {
     submitBtn.innerHTML = `
-      <span class="spinner-border spinner-border-sm" 
-            role="status" 
-            aria-hidden="true"></span>
+      <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
       Processing...
     `;
     submitBtn.disabled = true;
-
+    
     const response = await fetch('/podcast', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams(new FormData(form))
     });
-
     if (!response.ok) throw new Error(await response.text());
-    
     const data = await response.json();
     window.location.href = `/podcast_status/${data.job_id}`;
-
   } catch (error) {
     document.getElementById('podcastStatus').innerHTML = `
-      <div class="alert alert-danger mt-3">
-        Error: ${error.message}
-      </div>
+      <div class="alert alert-danger mt-3">Error: ${error.message}</div>
     `;
   } finally {
     submitBtn.innerHTML = originalBtnText;
