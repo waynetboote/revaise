@@ -3,7 +3,7 @@ name: Deploy to Heroku (Docker)
 on:
   push:
     branches:
-      - main   # Adjust this if you want to deploy from a different branch
+      - main  # Adjust this if you want to deploy from a different branch
 
 jobs:
   build-and-deploy:
@@ -22,18 +22,20 @@ jobs:
 
       # Build the Docker image using your Dockerfile.
       - name: Build Docker image
-        run: |
-          docker build -t registry.heroku.com/${{ secrets.HEROKU_APP_NAME }}/web .
+        run: docker build -t registry.heroku.com/${{ secrets.HEROKU_APP_NAME }}/web .
 
       # Push the Docker image to Heroku
       - name: Push Docker image to Heroku
+        run: docker push registry.heroku.com/${{ secrets.HEROKU_APP_NAME }}/web
+
+      # Install the Heroku CLI (this is the new step)
+      - name: Install Heroku CLI
         run: |
-          docker push registry.heroku.com/${{ secrets.HEROKU_APP_NAME }}/web
+          curl https://cli-assets.heroku.com/install.sh | sh
 
       # Release the image on Heroku
       - name: Release to Heroku
-        run: |
-          heroku container:release web --app ${{ secrets.HEROKU_APP_NAME }}
+        run: heroku container:release web --app ${{ secrets.HEROKU_APP_NAME }}
         env:
           HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
           HEROKU_APP_NAME: ${{ secrets.HEROKU_APP_NAME }}
