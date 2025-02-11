@@ -1,5 +1,4 @@
 {% extends "base.html" %}
-
 {% block title %}Lesson Activity Generator{% endblock %}
 
 {% block content %}
@@ -10,17 +9,13 @@
         <div class="card-header bg-warning text-dark">
           <h2 class="h4 mb-0">AI-Powered Activity Generator</h2>
         </div>
-
         <div class="card-body">
           <form id="activityForm" method="POST">
             <div class="row g-3">
               <div class="col-md-6">
                 <label for="topic" class="form-label">Learning Topic</label>
-                <input type="text" class="form-control" 
-                       id="topic" name="topic" 
-                       placeholder="e.g., Photosynthesis" required>
+                <input type="text" class="form-control" id="topic" name="topic" placeholder="e.g., Photosynthesis" required>
               </div>
-              
               <div class="col-md-6">
                 <label for="year_group" class="form-label">Year Group</label>
                 <select class="form-select" id="year_group" name="year_group" required>
@@ -30,43 +25,31 @@
                   {% endfor %}
                 </select>
               </div>
-
               <div class="col-12">
                 <label for="learning_goals" class="form-label">Specific Learning Goals</label>
-                <textarea class="form-control" id="learning_goals" 
-                          name="learning_goals" rows="3"
-                          placeholder="Example: Understand the process of plant energy production"></textarea>
+                <textarea class="form-control" id="learning_goals" name="learning_goals" rows="3" placeholder="Example: Understand plant energy production"></textarea>
               </div>
-
               <div class="col-md-6">
                 <label class="form-label">Activity Type</label>
                 <div class="btn-group-vertical w-100" role="group">
-                  <input type="radio" class="btn-check" name="activity_type" 
-                         id="type1" value="hands-on" autocomplete="off" checked>
+                  <input type="radio" class="btn-check" name="activity_type" id="type1" value="hands-on" autocomplete="off" checked>
                   <label class="btn btn-outline-primary text-start" for="type1">
                     <i class="bi bi-tools me-2"></i>Hands-on Experiment
                   </label>
-
-                  <input type="radio" class="btn-check" name="activity_type" 
-                         id="type2" value="discussion" autocomplete="off">
+                  <input type="radio" class="btn-check" name="activity_type" id="type2" value="discussion" autocomplete="off">
                   <label class="btn btn-outline-primary text-start" for="type2">
                     <i class="bi bi-people me-2"></i>Group Discussion
                   </label>
                 </div>
               </div>
-
               <div class="col-md-6">
                 <label class="form-label">Resources Available</label>
                 <div class="form-check">
-                  <input class="form-check-input" type="checkbox" 
-                         name="resources" value="projector" id="projector">
-                  <label class="form-check-label" for="projector">
-                    Projector/Screen
-                  </label>
+                  <input class="form-check-input" type="checkbox" name="resources" value="projector" id="projector">
+                  <label class="form-check-label" for="projector">Projector/Screen</label>
                 </div>
-                <!-- Add more resource checkboxes -->
+                <!-- Add more resource checkboxes as needed -->
               </div>
-
               <div class="col-12">
                 <button type="submit" class="btn btn-warning btn-lg w-100">
                   Generate Activities <i class="bi bi-magic ms-2"></i>
@@ -74,7 +57,6 @@
               </div>
             </div>
           </form>
-
           <div id="activityResults" class="mt-4"></div>
         </div>
       </div>
@@ -87,22 +69,17 @@
 <script>
 document.getElementById('activityForm').addEventListener('submit', async (e) => {
   e.preventDefault();
-  
   const formData = new FormData(e.target);
   const data = Object.fromEntries(formData.entries());
   data.resources = Array.from(formData.getAll('resources'));
-  
   try {
     const response = await fetch('/ideas', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
     });
-
     const result = await response.json();
-    
     if(result.error) throw new Error(result.error);
-    
     const formattedResults = result.ideas.split('\n').map(idea => `
       <div class="card mb-3">
         <div class="card-body">
@@ -116,13 +93,9 @@ document.getElementById('activityForm').addEventListener('submit', async (e) => 
         </div>
       </div>
     `).join('');
-    
     document.getElementById('activityResults').innerHTML = formattedResults;
-    
   } catch (error) {
-    document.getElementById('activityResults').innerHTML = `
-      <div class="alert alert-danger mt-3">${error.message}</div>
-    `;
+    document.getElementById('activityResults').innerHTML = `<div class="alert alert-danger mt-3">${error.message}</div>`;
   }
 });
 </script>
