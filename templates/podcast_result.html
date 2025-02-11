@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 {% block title %}Podcast Feed Generated{% endblock %}
 {% block content %}
-<div class="w3-container w3-padding-32">
+<div class="container py-4">
   <h2>Podcast Feed Generated</h2>
   {% if audio_file %}
     <p>Your podcast has been generated. You can <a href="{{ audio_file }}" target="_blank">listen to the audio</a> or download it.</p>
   {% else %}
-    <p class="w3-text-red">There was an error generating your podcast feed.</p>
+    <p class="text-danger">There was an error generating your podcast feed.</p>
   {% endif %}
-  <a href="{{ url_for('podcast_tool') }}" class="w3-button w3-green w3-round-large">Generate Another Podcast</a>
+  <a href="{{ url_for('podcast_tool') }}" class="btn btn-success mt-3">Generate Another Podcast</a>
 </div>
 {% endblock %}
