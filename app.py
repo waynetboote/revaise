@@ -42,7 +42,9 @@ app.config.update(
     SECRET_KEY=os.environ.get('FLASK_SECRET_KEY', os.urandom(24)),
     JSONIFY_PRETTYPRINT_REGULAR=False,
     CACHE_TYPE='RedisCache',
-    CACHE_REDIS_URL=os.environ.get('REDIS_URL', 'redis://localhost:6379')
+    CACHE_REDIS_URL=os.environ.get('REDIS_URL', 'redis://localhost:6379'),
+    # Enable built-in rate limit headers provided by flask-limiter
+    RATELIMIT_HEADERS_ENABLED=True
 )
 
 # Allowed domains for podcast sources
@@ -54,16 +56,16 @@ ALLOWED_DOMAINS = {
     'your-school-domain.edu'
 }
 
-# Initialize extensions
+# Initialize caching and rate limiting
 cache = Cache()
 limiter = Limiter(app=app, key_func=get_remote_address)
 
-# Configure Redis connection
+# Configure Redis connection (certificate verification disabled for testing)
 def get_redis_connection():
     return Redis.from_url(
         os.environ.get('REDIS_URL', 'redis://localhost:6379'),
         ssl=True,
-        ssl_cert_reqs=ssl.CERT_NONE,  # Disable certificate verification (for testing only)
+        ssl_cert_reqs=ssl.CERT_NONE,
         decode_responses=False
     )
 
@@ -79,25 +81,11 @@ except Exception as e:
 cache.init_app(app)
 limiter.storage_url = os.environ.get('REDIS_URL', 'redis://localhost:6379')
 
-# Security middleware: Enforce HTTPS in production
+# Security middleware: enforce HTTPS in production
 @app.before_request
 def enforce_https():
     if os.environ.get('FLASK_ENV') == 'production' and not request.is_secure:
         return redirect(request.url.replace('http://', 'https://'))
-
-# Rate limit headers
-@app.after_request
-def add_rate_limit_headers(response):
-    view_func = app.view_functions.get(request.endpoint)
-    if view_func:
-        limit = limiter.limiters[0].check_request_limit(view_func)
-        if limit:
-            response.headers.extend({
-                'X-RateLimit-Limit': limit.limit,
-                'X-RateLimit-Remaining': limit.remaining,
-                'X-RateLimit-Reset': limit.reset_at
-            })
-    return response
 
 # Routes
 @app.route('/')
@@ -146,10 +134,12 @@ def export_pdf():
         if not data or 'content' not in data:
             return jsonify({"error": "No content provided"}), 400
         pdf_buffer = generate_pdf(data['content'])
-        return send_file(pdf_buffer,
-                         mimetype='application/pdf',
-                         download_name='lesson_plan.pdf',
-                         as_attachment=True)
+        return send_file(
+            pdf_buffer,
+            mimetype='application/pdf',
+            download_name='lesson_plan.pdf',
+            as_attachment=True
+        )
     except Exception as e:
         logger.error(f"PDF Export Error: {str(e)}")
         return jsonify({"error": "Failed to generate PDF"}), 500
