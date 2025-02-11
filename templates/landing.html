@@ -1,88 +1,98 @@
 {% extends "base.html" %}
-
-{% block title %}AI Teaching Assistant{% endblock %}
+{% block title %}RevAIse - Home{% endblock %}
 
 {% block content %}
+<!-- Hero Section -->
 <section aria-labelledby="main-heading" class="hero-section bg-primary text-light py-5">
   <div class="container text-center">
     <div class="row justify-content-center">
       <div class="col-lg-8">
         <h1 id="main-heading" class="display-4 fw-bold mb-4">Transform Teaching Materials in Seconds</h1>
-        <p class="lead mb-5">Convert videos to lessons, adapt texts, and generate activities - powered by AI</p>
-        
+        <p class="lead mb-5">Convert videos to lessons, adapt texts, and generate activities – all powered by AI.</p>
         <div class="d-grid gap-3 d-md-flex justify-content-md-center">
-          <!-- Updated endpoint from 'youtube_tool' to 'podcast_tool' -->
-          <a href="{{ url_for('podcast_tool') }}" class="btn btn-light btn-lg px-4 gap-3">
+          <a href="{{ url_for('podcast_tool') }}" class="btn btn-light btn-lg px-4">
             <i class="bi bi-youtube me-2"></i>YouTube to Slides
           </a>
           <a href="{{ url_for('ideas') }}" class="btn btn-warning btn-lg px-4">
             <i class="bi bi-lightbulb me-2"></i>Activity Ideas
           </a>
+          <a href="{{ url_for('convert_text') }}" class="btn btn-info btn-lg px-4">
+            <i class="bi bi-text-paragraph me-2"></i>Adapt Text
+          </a>
         </div>
       </div>
     </div>
   </div>
 </section>
 
+<!-- Features Section -->
 <section aria-labelledby="features-heading" class="py-5 bg-light">
   <div class="container">
     <h2 id="features-heading" class="text-center mb-5">Why Teachers Love RevAIse</h2>
     <div class="row g-4">
-      <div class="col-md-6 col-lg-4">
+      <div class="col-md-4">
         <div class="card h-100 shadow-sm">
-          <div class="card-body">
-            <div class="feature-icon mb-3">
-              <i class="bi bi-clock-history display-6 text-primary"></i>
-            </div>
+          <div class="card-body text-center">
+            <i class="bi bi-clock-history display-4 text-primary mb-3"></i>
             <h3 class="h5 card-title">Time Saver</h3>
-            <p class="card-text">Convert 1-hour videos to slides in 2 minutes</p>
+            <p class="card-text">Convert 1-hour videos to slides in 2 minutes.</p>
           </div>
         </div>
       </div>
-      <!-- Add more feature cards as needed -->
+      <!-- Additional feature cards can be added here -->
     </div>
   </div>
 </section>
 
+<!-- Workflow Section -->
 <section aria-labelledby="workflow-heading" class="py-5">
   <div class="container">
     <h2 id="workflow-heading" class="text-center mb-5">How It Works</h2>
     <div class="row g-4">
-      <div class="col-md-4">
-        <div class="step-card text-center p-4">
-          <div class="step-number">1</div>
+      <div class="col-md-4 text-center">
+        <div class="p-4">
+          <div class="display-4 fw-bold">1</div>
           <h3 class="h5 mt-3">Input Content</h3>
-          <p>YouTube URL or text passage</p>
+          <p>Provide a YouTube URL or text.</p>
         </div>
       </div>
-      <!-- Add workflow steps as needed -->
+      <div class="col-md-4 text-center">
+        <div class="p-4">
+          <div class="display-4 fw-bold">2</div>
+          <h3 class="h5 mt-3">AI Processing</h3>
+          <p>Our AI converts your content into lesson materials.</p>
+        </div>
+      </div>
+      <div class="col-md-4 text-center">
+        <div class="p-4">
+          <div class="display-4 fw-bold">3</div>
+          <h3 class="h5 mt-3">Review & Download</h3>
+          <p>Access your slides, texts, and activity ideas.</p>
+        </div>
+      </div>
     </div>
   </div>
 </section>
 {% endblock %}
 
 {% block scripts %}
-<!-- Lazy loading for images -->
 <script>
-  document.addEventListener("DOMContentLoaded", function() {
-    const lazyImages = [].slice.call(document.querySelectorAll("img.lazy-load"));
-    
-    if ("IntersectionObserver" in window) {
-      let lazyImageObserver = new IntersectionObserver(function(entries) {
-        entries.forEach(function(entry) {
-          if (entry.isIntersecting) {
-            let lazyImage = entry.target;
-            lazyImage.src = lazyImage.dataset.src;
-            lazyImage.classList.remove("lazy-load");
-            lazyImageObserver.unobserve(lazyImage);
-          }
-        });
+// Lazy loading for images
+document.addEventListener("DOMContentLoaded", function() {
+  const lazyImages = Array.from(document.querySelectorAll("img.lazy-load"));
+  if ("IntersectionObserver" in window) {
+    const lazyImageObserver = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+          const lazyImage = entry.target;
+          lazyImage.src = lazyImage.dataset.src;
+          lazyImage.classList.remove("lazy-load");
+          lazyImageObserver.unobserve(lazyImage);
+        }
       });
-
-      lazyImages.forEach(function(lazyImage) {
-        lazyImageObserver.observe(lazyImage);
-      });
-    }
-  });
+    });
+    lazyImages.forEach(lazyImage => lazyImageObserver.observe(lazyImage));
+  }
+});
 </script>
 {% endblock %}
