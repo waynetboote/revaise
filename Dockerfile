@@ -3,11 +3,12 @@
 # Build stage
 FROM python:3.11-slim-bookworm as builder
 
-# Install system dependencies
+# Install system dependencies including git
 RUN apt-get update && apt-get install -y \
     build-essential \
     curl \
     libffi-dev \
+    git \
     && rm -rf /var/lib/apt/lists/*
 
 # Set working directory
