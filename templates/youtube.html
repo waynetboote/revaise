@@ -1,5 +1,4 @@
 {% extends "base.html" %}
-
 {% block title %}YouTube to Slides Converter{% endblock %}
 
 {% block content %}
@@ -10,21 +9,16 @@
         <div class="card-header bg-primary text-white">
           <h2 class="h4 mb-0">YouTube to Lesson Slides</h2>
         </div>
-        
         <div class="card-body">
           <form id="youtubeForm" novalidate>
             <div class="mb-4">
               <label for="youtubeUrl" class="form-label fw-bold">YouTube Video URL</label>
-              <input type="url" class="form-control form-control-lg" 
-                     id="youtubeUrl" name="youtube_url" 
-                     placeholder="https://www.youtube.com/watch?v=..." 
-                     pattern="^(https?\:\/\/)?(www\.)?(youtube\.com|youtu\.?be)\/.+" 
-                     required>
+              <input type="url" class="form-control form-control-lg" id="youtubeUrl" name="youtube_url"
+                     placeholder="https://www.youtube.com/watch?v=..." pattern="^(https?\:\/\/)?(www\.)?(youtube\.com|youtu\.?be)\/.+" required>
               <div class="invalid-feedback">
-                Please enter a valid YouTube URL
+                Please enter a valid YouTube URL.
               </div>
             </div>
-
             <div class="row g-3 mb-4">
               <div class="col-md-6">
                 <label for="gradeLevel" class="form-label">Target Grade Level</label>
@@ -37,22 +31,16 @@
               </div>
               <div class="col-md-6">
                 <label for="slideCount" class="form-label">Slides to Generate</label>
-                <input type="number" class="form-control" 
-                       id="slideCount" name="slide_count" 
-                       min="5" max="20" value="10">
+                <input type="number" class="form-control" id="slideCount" name="slide_count" min="5" max="20" value="10">
               </div>
             </div>
-
             <button type="submit" class="btn btn-primary btn-lg w-100">
               <span class="submit-text">Generate Slides</span>
-              <span class="spinner-border spinner-border-sm d-none" 
-                    role="status" aria-hidden="true"></span>
+              <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
             </button>
           </form>
         </div>
       </div>
-
-      <!-- Results Section -->
       <div id="resultsSection" class="mt-4 d-none">
         <div class="card shadow">
           <div class="card-body">
@@ -78,7 +66,6 @@
 <script>
 document.getElementById('youtubeForm').addEventListener('submit', async (e) => {
   e.preventDefault();
-  
   const form = e.target;
   const submitBtn = form.querySelector('button[type="submit"]');
   const spinner = submitBtn.querySelector('.spinner-border');
@@ -88,12 +75,12 @@ document.getElementById('youtubeForm').addEventListener('submit', async (e) => {
     form.classList.add('was-validated');
     return;
   }
-
+  
   try {
     submitText.textContent = 'Processing...';
     spinner.classList.remove('d-none');
     submitBtn.disabled = true;
-
+    
     const response = await fetch('/generate_summary', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -103,20 +90,18 @@ document.getElementById('youtubeForm').addEventListener('submit', async (e) => {
         slide_count: form.slideCount.value
       })
     });
-
     if (!response.ok) throw new Error(await response.text());
-    
     const data = await response.json();
-    document.getElementById('previewArea').innerHTML = 
-      `<h4>${data.summary.split('\n')[0]}</h4>` +
-      `<ul>${data.summary.split('\n').slice(1).map(line => 
-        `<li>${line.replace('- ', '')}</li>`).join('')}</ul>`;
     
+    // Update the preview area with the generated summary
+    document.getElementById('previewArea').innerHTML =
+      `<h4>${data.summary.split('\n')[0]}</h4>` +
+      `<ul>${data.summary.split('\n').slice(1).map(line => `<li>${line.replace('- ', '')}</li>`).join('')}</ul>`;
+      
     document.getElementById('resultsSection').classList.remove('d-none');
     window.scrollTo({ top: document.getElementById('resultsSection').offsetTop, behavior: 'smooth' });
-
   } catch (error) {
-    showToast(`Error: ${error.message}`, 'danger');
+    alert(`Error: ${error.message}`);
   } finally {
     submitText.textContent = 'Generate Slides';
     spinner.classList.add('d-none');
