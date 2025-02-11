@@ -1,5 +1,4 @@
 {% extends "base.html" %}
-
 {% block title %}Teacher Dashboard{% endblock %}
 
 {% block content %}
@@ -7,7 +6,7 @@
   <div class="row">
     <!-- Usage Statistics -->
     <div class="col-md-6">
-      <div class="card shadow">
+      <div class="card shadow mb-4">
         <div class="card-header">
           <h3>Resource Usage</h3>
         </div>
@@ -16,10 +15,9 @@
         </div>
       </div>
     </div>
-    
     <!-- Recent Activities -->
     <div class="col-md-6">
-      <div class="card shadow">
+      <div class="card shadow mb-4">
         <div class="card-header">
           <h3>Recent Activities</h3>
         </div>
@@ -27,7 +25,8 @@
           <ul class="list-group">
             {% for activity in recent_activities %}
             <li class="list-group-item">
-              {{ activity.timestamp }}: {{ activity.description }}
+              <small class="text-muted">{{ activity.timestamp }}</small>
+              <p class="mb-0">{{ activity.description }}</p>
             </li>
             {% endfor %}
           </ul>
@@ -36,4 +35,29 @@
     </div>
   </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const ctx = document.getElementById('usageChart').getContext('2d');
+  const usageChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: {{ usage_stats.labels|tojson }},
+      datasets: [{
+        label: 'Memory Usage (MB)',
+        data: {{ usage_stats.data|tojson }},
+        borderColor: 'rgba(75, 192, 192, 1)',
+        fill: false,
+        tension: 0.1
+      }]
+    },
+    options: {
+      scales: {
+        y: { beginAtZero: true }
+      }
+    }
+  });
+</script>
 {% endblock %}
