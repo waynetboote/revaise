@@ -22,15 +22,15 @@ from rq import Queue, Retry
 from rq.job import Job  # Use this import rather than: from rq import Job
 import openai
 
-# Import ProxyFix from Werkzeug
-from werkzeug.middleware.proxy_fix import ProxyFix
-
 # Local modules
 from youtube_transcript import get_transcript
 from summarization import summarize_text
 from ppt_generator import create_pptx, generate_pdf
 from podcastfy.client import generate_podcast
 from google_slides_creator import create_google_slides
+
+# Import ProxyFix from Werkzeug
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -46,8 +46,8 @@ app.config.update(
     CACHE_REDIS_URL=os.environ.get('REDIS_URL', 'redis://localhost:6379')
 )
 
-# Add ProxyFix middleware (adjust the number of proxies as needed)
-app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_port=1)
+# Apply ProxyFix so that request.is_secure is determined correctly when behind a proxy
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_port=1, x_prefix=1)
 
 # Allowed domains for podcast sources
 ALLOWED_DOMAINS = {
@@ -62,9 +62,10 @@ ALLOWED_DOMAINS = {
 cache = Cache()
 cache.init_app(app)
 
-# Initialize Flask-Limiter using the two-step process
+# Initialize Flask-Limiter using a two-step process:
 limiter = Limiter(key_func=get_remote_address)
 limiter.init_app(app)
+# Optionally, set a storage backend:
 limiter.storage_url = os.environ.get('REDIS_URL', 'redis://localhost:6379')
 
 # Configure Redis connection for RQ (using SSL but disabling certificate verification)
@@ -88,6 +89,7 @@ except Exception as e:
 @app.before_request
 def enforce_https():
     if os.environ.get('FLASK_ENV') == 'production' and not request.is_secure:
+        # Use ProxyFix to help detect secure requests correctly.
         return redirect(request.url.replace('http://', 'https://'))
 
 # (Optional) Add rate limit headers if desired.
@@ -95,10 +97,7 @@ def enforce_https():
 def add_rate_limit_headers(response):
     return response
 
-# ----------------------
 # Routes
-# ----------------------
-
 @app.route('/')
 @limiter.limit("10/minute")
 @cache.cached(timeout=300)
@@ -110,33 +109,6 @@ def home():
 @app.route('/health')
 def health_check():
     return jsonify(status="ok", timestamp=datetime.utcnow()), 200
-
-# NEW: Convert Text Endpoint for adapting text for a given reading level.
-@app.route('/convert_text', methods=['POST'])
-@limiter.limit("10/hour")
-def convert_text():
-    data = request.get_json()
-    input_text = data.get('input_text')
-    year_group = data.get('year_group')
-    if not input_text or not year_group:
-        return jsonify({"error": "Missing input text or year group"}), 400
-
-    # Build a prompt for adapting the text; modify this prompt as needed.
-    prompt = (
-        f"Please adapt the following text for {year_group} students in terms of reading level:\n\n"
-        f"{input_text}\n\nAdapted version:"
-    )
-    try:
-        response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
-            messages=[{"role": "user", "content": prompt}],
-            temperature=0.7,
-        )
-        adapted_text = response['choices'][0]['message']['content'].strip()
-        return jsonify({"converted_text": adapted_text})
-    except Exception as e:
-        logger.error("Error in convert_text: %s", str(e))
-        return jsonify({"error": "Failed to convert text"}), 500
 
 @app.route('/generate_summary', methods=['POST'])
 @limiter.limit("10/hour")
@@ -252,6 +224,12 @@ def podcast_status(job_id):
     except Exception as e:
         logger.error(f"Status check error: {str(e)}")
         return redirect(url_for('podcast_tool'))
+
+@app.route('/dashboard')
+def dashboard():
+    # This route is added to support URL building for 'dashboard'.
+    # You should pass real data for recent activities as needed.
+    return render_template('dashboard.html', current_year=datetime.now().year, recent_activities=[])
 
 @app.route('/privacy')
 def privacy_policy():
