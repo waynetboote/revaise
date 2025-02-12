@@ -232,6 +232,12 @@ def dashboard():
     # You should pass real data for recent activities as needed.
     return render_template('dashboard.html', current_year=datetime.now().year, recent_activities=[])
 
+@app.route('/convert_text', methods=['GET', 'POST'])
+def convert_text():
+    # For now, simply render the convert.html template.
+    # You can later add any POST-handling logic if needed.
+    return render_template('convert.html', current_year=datetime.now().year)
+
 @app.route('/privacy')
 def privacy_policy():
     return render_template("privacy.html")
