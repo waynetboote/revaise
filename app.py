@@ -36,6 +36,11 @@ logger.info("PYTHONHTTPSVERIFY = %s", os.environ.get('PYTHONHTTPSVERIFY'))
 
 # Initialize Flask application
 app = Flask(__name__)
+
+# *** Insert ProxyFix here ***
+from werkzeug.middleware.proxy_fix import ProxyFix
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1)
+
 app.config.update(
     SECRET_KEY=os.environ.get('FLASK_SECRET_KEY', os.urandom(24)),
     JSONIFY_PRETTYPRINT_REGULAR=False,
