@@ -19,7 +19,7 @@ from flask_limiter.util import get_remote_address
 from flask_caching import Cache
 from redis import Redis
 from rq import Queue, Retry
-from rq.job import Job   # <-- Changed: Import Job from rq.job instead of from rq
+from rq.job import Job  # Use this import rather than from rq import Job
 import openai
 
 # Local modules
@@ -56,8 +56,10 @@ ALLOWED_DOMAINS = {
 cache = Cache()
 cache.init_app(app)
 
-# Initialize Flask-Limiter (Pass the Flask app as the first argument)
-limiter = Limiter(app, key_func=get_remote_address)
+# Initialize Flask-Limiter using the two-step process
+limiter = Limiter(key_func=get_remote_address)
+limiter.init_app(app)
+# Optionally, set a storage backend:
 limiter.storage_url = os.environ.get('REDIS_URL', 'redis://localhost:6379')
 
 # Configure Redis connection for RQ (using SSL but disabling certificate verification)
@@ -65,8 +67,7 @@ def get_redis_connection():
     return Redis.from_url(
         os.environ.get('REDIS_URL', 'redis://localhost:6379'),
         ssl=True,
-        ssl_cert_reqs=ssl.CERT_NONE,       # Disable certificate verification (use with caution)
-        ssl_check_hostname=False,           # Disable hostname checking
+        ssl_cert_reqs=ssl.CERT_NONE,  # Disables certificate verification (use with caution in production)
         decode_responses=False
     )
 
@@ -78,13 +79,13 @@ except Exception as e:
     logger.critical("Redis connection failed: %s", e)
     raise
 
-# Security middleware: enforce HTTPS in production
+# Enforce HTTPS in production
 @app.before_request
 def enforce_https():
     if os.environ.get('FLASK_ENV') == 'production' and not request.is_secure:
         return redirect(request.url.replace('http://', 'https://'))
 
-# Optional: Rate limit headers can be added here if desired.
+# (Optional) Add rate limit headers if desired
 @app.after_request
 def add_rate_limit_headers(response):
     return response
