@@ -177,7 +177,10 @@ def ideas():
             )
             response = openai.ChatCompletion.create(
                 model="gpt-3.5-turbo",
-                messages=[{"role": "user", "content": prompt}],
+                messages=[
+                    {"role": "system", "content": "You are an assistant that generates creative classroom activities."},
+                    {"role": "user", "content": prompt}
+                ],
                 temperature=0.7,
             )
             ideas_response = response['choices'][0]['message']['content'].strip()
@@ -257,10 +260,14 @@ def convert_text():
         try:
             response = openai.ChatCompletion.create(
                 model="gpt-3.5-turbo",
-                messages=[{"role": "user", "content": prompt}],
+                messages=[
+                    {"role": "system", "content": "You are a text simplification assistant."},
+                    {"role": "user", "content": prompt}
+                ],
                 temperature=0.7,
             )
             converted_text = response['choices'][0]['message']['content'].strip()
+            # Replace this with your actual complexity analysis if available.
             complexity_stats = {"readability": "Calculated metric here"}
         except Exception as e:
             logger.error(f"Error in text conversion: {e}")
