@@ -18,7 +18,8 @@ from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_caching import Cache
 from redis import Redis
-from rq import Queue, Job, Retry
+from rq import Queue, Retry
+from rq.job import Job   # <-- Changed: Import Job from rq.job instead of from rq
 import openai
 
 # Local modules
@@ -55,8 +56,7 @@ ALLOWED_DOMAINS = {
 cache = Cache()
 cache.init_app(app)
 
-# Initialize Flask-Limiter
-# IMPORTANT: Pass the Flask app as the first (positional) argument.
+# Initialize Flask-Limiter (Pass the Flask app as the first argument)
 limiter = Limiter(app, key_func=get_remote_address)
 limiter.storage_url = os.environ.get('REDIS_URL', 'redis://localhost:6379')
 
@@ -65,7 +65,8 @@ def get_redis_connection():
     return Redis.from_url(
         os.environ.get('REDIS_URL', 'redis://localhost:6379'),
         ssl=True,
-        ssl_cert_reqs=ssl.CERT_NONE,  # Disables certificate verification (use with caution)
+        ssl_cert_reqs=ssl.CERT_NONE,       # Disable certificate verification (use with caution)
+        ssl_check_hostname=False,           # Disable hostname checking
         decode_responses=False
     )
 
