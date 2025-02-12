@@ -44,6 +44,7 @@ app.config.update(
     JSONIFY_PRETTYPRINT_REGULAR=False,
     CACHE_TYPE='RedisCache',
     CACHE_REDIS_URL=os.environ.get('REDIS_URL', 'redis://localhost:6379'),
+    CACHE_REDIS_SSL=True,  # Enable SSL for the caching backend
     CACHE_REDIS_ARGS={'ssl_cert_reqs': ssl.CERT_NONE}  # Disable SSL certificate verification
 )
 
