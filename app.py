@@ -56,9 +56,8 @@ cache = Cache()
 cache.init_app(app)
 
 # Initialize Flask-Limiter
-# NOTE: The Limiter class expects the key function as a keyword argument.
-limiter = Limiter(key_func=get_remote_address, app=app)
-# You can also set a storage backend by configuring limiter.storage_url if needed:
+# IMPORTANT: Pass the Flask app as the first (positional) argument.
+limiter = Limiter(app, key_func=get_remote_address)
 limiter.storage_url = os.environ.get('REDIS_URL', 'redis://localhost:6379')
 
 # Configure Redis connection for RQ (using SSL but disabling certificate verification)
@@ -87,7 +86,6 @@ def enforce_https():
 # Optional: Rate limit headers can be added here if desired.
 @app.after_request
 def add_rate_limit_headers(response):
-    # (If you wish to customize headers, do so here. For now, we'll pass through.)
     return response
 
 # Routes
