@@ -43,7 +43,8 @@ app.config.update(
     SECRET_KEY=os.environ.get('FLASK_SECRET_KEY', os.urandom(24)),
     JSONIFY_PRETTYPRINT_REGULAR=False,
     CACHE_TYPE='RedisCache',
-    CACHE_REDIS_URL=os.environ.get('REDIS_URL', 'redis://localhost:6379')
+    CACHE_REDIS_URL=os.environ.get('REDIS_URL', 'redis://localhost:6379'),
+    CACHE_REDIS_ARGS={'ssl_cert_reqs': ssl.CERT_NONE}  # Disable SSL certificate verification
 )
 
 # Apply ProxyFix so that request.is_secure is determined correctly when behind a proxy
