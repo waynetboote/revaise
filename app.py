@@ -245,21 +245,34 @@ def terms():
 def convert_text():
     if request.method == 'POST':
         data = request.get_json()
-        # Extract the text and target level from the request data.
         input_text = data.get("input_text", "")
         year_group = data.get("year_group", "")
         
-        # TODO: Replace the dummy conversion logic with your real text adaptation process.
-        converted_text = f"Converted for {year_group}: {input_text}"
-        complexity_stats = {"readability": "8.0"}  # Dummy metric
+        prompt = (
+            f"Rewrite the following text so that it is appropriate for {year_group} students:\n\n"
+            f"{input_text}\n\n"
+            "Ensure the language is clear and accessible."
+        )
+        
+        try:
+            response = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo",
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.7,
+            )
+            converted_text = response['choices'][0]['message']['content'].strip()
+            complexity_stats = {"readability": "Calculated metric here"}
+        except Exception as e:
+            logger.error(f"Error in text conversion: {e}")
+            return jsonify({"error": "Failed to convert text"}), 500
         
         return jsonify({
             "converted_text": converted_text,
             "complexity_stats": complexity_stats
         })
     
-    # For GET requests, simply render the convert.html template.
     return render_template('convert.html', current_year=datetime.now().year)
+
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
