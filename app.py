@@ -232,12 +232,6 @@ def dashboard():
     # You should pass real data for recent activities as needed.
     return render_template('dashboard.html', current_year=datetime.now().year, recent_activities=[])
 
-@app.route('/convert_text', methods=['GET', 'POST'])
-def convert_text():
-    # For now, simply render the convert.html template.
-    # You can later add any POST-handling logic if needed.
-    return render_template('convert.html', current_year=datetime.now().year)
-
 @app.route('/privacy')
 def privacy_policy():
     return render_template("privacy.html")
@@ -245,6 +239,26 @@ def privacy_policy():
 @app.route('/terms')
 def terms():
     return render_template("terms.html")
+
+@app.route('/convert_text', methods=['GET', 'POST'])
+def convert_text():
+    if request.method == 'POST':
+        data = request.get_json()
+        # Extract the text and target level from the request data.
+        input_text = data.get("input_text", "")
+        year_group = data.get("year_group", "")
+        
+        # TODO: Replace the dummy conversion logic with your real text adaptation process.
+        converted_text = f"Converted for {year_group}: {input_text}"
+        complexity_stats = {"readability": "8.0"}  # Dummy metric
+        
+        return jsonify({
+            "converted_text": converted_text,
+            "complexity_stats": complexity_stats
+        })
+    
+    # For GET requests, simply render the convert.html template.
+    return render_template('convert.html', current_year=datetime.now().year)
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
