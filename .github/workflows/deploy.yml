@@ -41,10 +41,21 @@ jobs:
           HEROKU_APP_NAME: ${{ secrets.HEROKU_APP_NAME }}
           HEROKU_EMAIL: ${{ secrets.HEROKU_EMAIL }}
 
-      # (Optional) Check the deployment status by pinging the health endpoint
+      # Check the deployment status by pinging the /health endpoint
       - name: Check Health
         run: |
+          echo "Waiting 10 seconds for the app to start..."
           sleep 10
-          curl -f https://$HEROKU_APP_NAME.herokuapp.com/health
+          for i in {1..10}; do
+            echo "Health check attempt $i..."
+            if curl -f https://$HEROKU_APP_NAME.herokuapp.com/health; then
+              echo "Health check succeeded!"
+              exit 0
+            fi
+            echo "Health check failed, waiting 10 seconds..."
+            sleep 10
+          done
+          echo "Health check did not succeed after 10 attempts."
+          exit 1
         env:
           HEROKU_APP_NAME: ${{ secrets.HEROKU_APP_NAME }}
