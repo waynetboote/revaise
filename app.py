@@ -1,5 +1,10 @@
-# app.py
 import ssl
+import logging
+
+# Configure logging as early as possible
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 # Disable HTTPS certificate verification for development (use with caution in production)
 ssl._create_default_https_context = ssl._create_unverified_context
 
@@ -7,7 +12,6 @@ from gevent import monkey
 monkey.patch_all()
 
 import os
-import logging
 import certifi
 from datetime import datetime
 from functools import wraps
@@ -33,9 +37,6 @@ from google_slides_creator import create_google_slides
 # Import ProxyFix from Werkzeug
 from werkzeug.middleware.proxy_fix import ProxyFix
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 logger.info("PYTHONHTTPSVERIFY = %s", os.environ.get('PYTHONHTTPSVERIFY'))
 
 # Initialize Flask application
