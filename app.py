@@ -73,13 +73,13 @@ limiter.storage_url = os.environ.get('REDIS_URL', 'redis://localhost:6379')
 
 # Configure Redis connection for RQ (using SSL but disabling certificate verification)
 def get_redis_connection():
+    unverified_context = ssl._create_unverified_context()
     return Redis.from_url(
         os.environ.get('REDIS_URL', 'redis://localhost:6379'),
         ssl=True,
-        ssl_cert_reqs=ssl.CERT_NONE,  # Disables certificate verification (use with caution in production)
+        ssl_context=unverified_context,  # Use the custom SSL context
         decode_responses=False
     )
-
 try:
     redis_conn = get_redis_connection()
     q = Queue(connection=redis_conn, default_timeout=600)
