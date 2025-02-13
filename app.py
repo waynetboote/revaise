@@ -21,6 +21,7 @@ from redis import Redis
 from rq import Queue, Retry
 from rq.job import Job  # Use this import rather than: from rq import Job
 import openai
+logger.info("OpenAI version: %s", openai.__version__)
 
 # Local modules
 from youtube_transcript import get_transcript
