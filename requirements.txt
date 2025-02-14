@@ -6,7 +6,7 @@ Flask==3.0.2
 Werkzeug==3.0.1
 gunicorn==21.2.0
 gevent==23.9.1
-openai==1.61.0
+openai==0.28
 tiktoken==0.8.0  # Pinned version for stability
 transformers[sentencepiece]==4.40.0  # Minimal transformers installation
 torch==2.0.1+cpu
