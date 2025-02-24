@@ -24,7 +24,7 @@ from flask_caching import Cache
 from redis import Redis
 from rq import Queue, Retry
 from rq.job import Job  # Use this import rather than: from rq import Job
-import openai
+from openai import ChatCompletion
 logger.info("OpenAI version: %s", openai.__version__)
 
 # Local modules
@@ -177,7 +177,7 @@ def ideas():
                 "Format as numbered items with clear sections.\n"
                 f"Additional requirements: {additional if additional else 'None'}"
             )
-            response = openai.ChatCompletion.create(
+            response = ChatCompletion.create(
                 model="gpt-3.5-turbo",
                 messages=[
                     {"role": "system", "content": "You are an assistant that generates creative classroom activities."},
