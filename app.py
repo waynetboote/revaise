@@ -25,9 +25,7 @@ from redis import Redis
 from rq import Queue, Retry
 from rq.job import Job
 
-# Import openai module and directly import ChatCompletion
-import openai
-from openai import ChatCompletion
+import openai  # Use the main openai module
 logger.info("OpenAI version: %s", openai.__version__)
 
 # Local modules
@@ -49,34 +47,37 @@ app.config.update(
     JSONIFY_PRETTYPRINT_REGULAR=False,
     CACHE_TYPE='RedisCache',
     CACHE_REDIS_URL=os.environ.get('REDIS_URL', 'redis://localhost:6379'),
-    CACHE_REDIS_SSL=True,
-    CACHE_REDIS_ARGS={'ssl_cert_reqs': ssl.CERT_NONE}
+    CACHE_REDIS_SSL=True,  # Enable SSL for the caching backend
+    CACHE_REDIS_ARGS={'ssl_cert_reqs': ssl.CERT_NONE}  # Disable SSL certificate verification
 )
 
-# Apply ProxyFix
+# Apply ProxyFix so that request.is_secure is determined correctly when behind a proxy
 app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_port=1, x_prefix=1)
 
+# Allowed domains for podcast sources
 ALLOWED_DOMAINS = {
     'youtube.com',
     'youtu.be',
     'soundcloud.com',
     'spoty.com',
-    'your-school-domain.edu'
+    'your-school-domain.edu'  # Add institutional domains as needed
 }
 
+# Initialize caching
 cache = Cache()
 cache.init_app(app)
 
+# Initialize Flask-Limiter using a two-step process:
 limiter = Limiter(key_func=get_remote_address)
 limiter.init_app(app)
 limiter.storage_url = os.environ.get('REDIS_URL', 'redis://localhost:6379')
 
+# Configure Redis connection for RQ (using SSL but disabling certificate verification)
 def get_redis_connection():
-    unverified_context = ssl._create_unverified_context()
     return Redis.from_url(
         os.environ.get('REDIS_URL', 'redis://localhost:6379'),
         ssl=True,
-        ssl_context=unverified_context,
+        ssl_cert_reqs=ssl.CERT_NONE,  # Disable certificate verification
         decode_responses=False
     )
 
@@ -88,6 +89,7 @@ except Exception as e:
     logger.critical("Redis connection failed: %s", e)
     raise
 
+# Enforce HTTPS in production
 @app.before_request
 def enforce_https():
     if os.environ.get('FLASK_ENV') == 'production' and not request.is_secure:
@@ -97,6 +99,7 @@ def enforce_https():
 def add_rate_limit_headers(response):
     return response
 
+# Routes
 @app.route('/')
 @limiter.limit("10/minute")
 @cache.cached(timeout=300)
@@ -172,7 +175,8 @@ def ideas():
                 "Format as numbered items with clear sections.\n"
                 f"Additional requirements: {additional if additional else 'None'}"
             )
-            response = ChatCompletion.create(
+            # Use the openai module's ChatCompletion (do not import it separately)
+            response = openai.ChatCompletion.create(
                 model="gpt-3.5-turbo",
                 messages=[
                     {"role": "system", "content": "You are an assistant that generates creative classroom activities."},
@@ -240,7 +244,7 @@ def terms():
     return render_template("terms.html")
 
 @app.route('/convert_text', methods=['GET', 'POST'])
-def convert_text():
+def convert_text_route():
     if request.method == 'POST':
         data = request.get_json()
         input_text = data.get("input_text", "")
@@ -253,7 +257,7 @@ def convert_text():
         )
         
         try:
-            response = ChatCompletion.create(
+            response = openai.ChatCompletion.create(
                 model="gpt-3.5-turbo",
                 messages=[
                     {"role": "system", "content": "You are a text simplification assistant."},
