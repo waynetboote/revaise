@@ -24,6 +24,9 @@ from flask_caching import Cache
 from redis import Redis
 from rq import Queue, Retry
 from rq.job import Job  # Use this import rather than: from rq import Job
+
+# IMPORTANT: Import openai normally for version logging and then import ChatCompletion directly.
+import openai
 from openai import ChatCompletion
 logger.info("OpenAI version: %s", openai.__version__)
 
@@ -69,7 +72,6 @@ cache.init_app(app)
 # Initialize Flask-Limiter using a two-step process:
 limiter = Limiter(key_func=get_remote_address)
 limiter.init_app(app)
-# Optionally, set a storage backend:
 limiter.storage_url = os.environ.get('REDIS_URL', 'redis://localhost:6379')
 
 # Configure Redis connection for RQ (using SSL but disabling certificate verification)
@@ -93,7 +95,6 @@ except Exception as e:
 @app.before_request
 def enforce_https():
     if os.environ.get('FLASK_ENV') == 'production' and not request.is_secure:
-        # Use ProxyFix to help detect secure requests correctly.
         return redirect(request.url.replace('http://', 'https://'))
 
 # (Optional) Add rate limit headers if desired.
@@ -260,7 +261,7 @@ def convert_text():
         )
         
         try:
-            response = openai.ChatCompletion.create(
+            response = ChatCompletion.create(
                 model="gpt-3.5-turbo",
                 messages=[
                     {"role": "system", "content": "You are a text simplification assistant."},
@@ -269,7 +270,6 @@ def convert_text():
                 temperature=0.7,
             )
             converted_text = response['choices'][0]['message']['content'].strip()
-            # Replace this with your actual complexity analysis if available.
             complexity_stats = {"readability": "Calculated metric here"}
         except Exception as e:
             logger.error(f"Error in text conversion: {e}")
