@@ -23,9 +23,9 @@ from flask_limiter.util import get_remote_address
 from flask_caching import Cache
 from redis import Redis
 from rq import Queue, Retry
-from rq.job import Job  # Use this import rather than: from rq import Job
+from rq.job import Job
 
-# Import openai module for version logging, then import ChatCompletion directly.
+# Import openai module and directly import ChatCompletion
 import openai
 from openai import ChatCompletion
 logger.info("OpenAI version: %s", openai.__version__)
@@ -49,40 +49,37 @@ app.config.update(
     JSONIFY_PRETTYPRINT_REGULAR=False,
     CACHE_TYPE='RedisCache',
     CACHE_REDIS_URL=os.environ.get('REDIS_URL', 'redis://localhost:6379'),
-    CACHE_REDIS_SSL=True,  # Enable SSL for the caching backend
-    CACHE_REDIS_ARGS={'ssl_cert_reqs': ssl.CERT_NONE}  # Disable SSL certificate verification
+    CACHE_REDIS_SSL=True,
+    CACHE_REDIS_ARGS={'ssl_cert_reqs': ssl.CERT_NONE}
 )
 
-# Apply ProxyFix so that request.is_secure is determined correctly when behind a proxy
+# Apply ProxyFix
 app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_port=1, x_prefix=1)
 
-# Allowed domains for podcast sources
 ALLOWED_DOMAINS = {
     'youtube.com',
     'youtu.be',
     'soundcloud.com',
     'spoty.com',
-    'your-school-domain.edu'  # Add institutional domains as needed
+    'your-school-domain.edu'
 }
 
-# Initialize caching
 cache = Cache()
 cache.init_app(app)
 
-# Initialize Flask-Limiter using a two-step process:
 limiter = Limiter(key_func=get_remote_address)
 limiter.init_app(app)
 limiter.storage_url = os.environ.get('REDIS_URL', 'redis://localhost:6379')
 
-# Configure Redis connection for RQ (using SSL but disabling certificate verification)
 def get_redis_connection():
     unverified_context = ssl._create_unverified_context()
     return Redis.from_url(
         os.environ.get('REDIS_URL', 'redis://localhost:6379'),
         ssl=True,
-        ssl_context=unverified_context,  # Use the custom SSL context
+        ssl_context=unverified_context,
         decode_responses=False
     )
+
 try:
     redis_conn = get_redis_connection()
     q = Queue(connection=redis_conn, default_timeout=600)
@@ -91,18 +88,15 @@ except Exception as e:
     logger.critical("Redis connection failed: %s", e)
     raise
 
-# Enforce HTTPS in production
 @app.before_request
 def enforce_https():
     if os.environ.get('FLASK_ENV') == 'production' and not request.is_secure:
         return redirect(request.url.replace('http://', 'https://'))
 
-# (Optional) Add rate limit headers if desired.
 @app.after_request
 def add_rate_limit_headers(response):
     return response
 
-# Routes
 @app.route('/')
 @limiter.limit("10/minute")
 @cache.cached(timeout=300)
@@ -235,8 +229,6 @@ def podcast_status(job_id):
 
 @app.route('/dashboard')
 def dashboard():
-    # This route is added to support URL building for 'dashboard'.
-    # You should pass real data for recent activities as needed.
     return render_template('dashboard.html', current_year=datetime.now().year, recent_activities=[])
 
 @app.route('/privacy')
@@ -261,7 +253,6 @@ def convert_text():
         )
         
         try:
-            # Note: Use the directly imported ChatCompletion here instead of openai.ChatCompletion.
             response = ChatCompletion.create(
                 model="gpt-3.5-turbo",
                 messages=[
@@ -271,7 +262,6 @@ def convert_text():
                 temperature=0.7,
             )
             converted_text = response['choices'][0]['message']['content'].strip()
-            # Replace this with your actual complexity analysis if available.
             complexity_stats = {"readability": "Calculated metric here"}
         except Exception as e:
             logger.error(f"Error in text conversion: {e}")
