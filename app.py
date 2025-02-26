@@ -25,7 +25,7 @@ from redis import Redis
 from rq import Queue, Retry
 from rq.job import Job  # Use this import rather than: from rq import Job
 
-# IMPORTANT: Import openai normally for version logging and then import ChatCompletion directly.
+# Import openai module for version logging, then import ChatCompletion directly.
 import openai
 from openai import ChatCompletion
 logger.info("OpenAI version: %s", openai.__version__)
@@ -261,6 +261,7 @@ def convert_text():
         )
         
         try:
+            # Note: Use the directly imported ChatCompletion here instead of openai.ChatCompletion.
             response = ChatCompletion.create(
                 model="gpt-3.5-turbo",
                 messages=[
@@ -270,6 +271,7 @@ def convert_text():
                 temperature=0.7,
             )
             converted_text = response['choices'][0]['message']['content'].strip()
+            # Replace this with your actual complexity analysis if available.
             complexity_stats = {"readability": "Calculated metric here"}
         except Exception as e:
             logger.error(f"Error in text conversion: {e}")
