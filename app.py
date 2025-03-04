@@ -249,8 +249,9 @@ def privacy_policy():
 def terms():
     return render_template("terms.html")
 
+# >>> CHANGED HERE: Renamed the function from "convert_text_route" to "convert_text"
 @app.route('/convert_text', methods=['GET', 'POST'])
-def convert_text_route():
+def convert_text():
     if request.method == 'POST':
         data = request.get_json()
         input_text = data.get("input_text", "")
