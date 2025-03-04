@@ -23,10 +23,17 @@
               <div class="col-md-6">
                 <label for="gradeLevel" class="form-label">Target Grade Level</label>
                 <select class="form-select" id="gradeLevel" name="grade_level">
-                  <option value="elementary">Elementary School</option>
-                  <option value="middle">Middle School</option>
-                  <option value="high">High School</option>
-                  <option value="college">College Level</option>
+                  <option value="Year 1">Year 1</option>
+                  <option value="Year 2">Year 2</option>
+                  <option value="Year 3">Year 3</option>
+                  <option value="Year 4">Year 4</option>
+                  <option value="Year 5">Year 5</option>
+                  <option value="Year 6">Year 6</option>
+                  <option value="Year 7">Year 7</option>
+                  <option value="Year 8">Year 8</option>
+                  <option value="Year 9">Year 9</option>
+                  <option value="Year 10">Year 10</option>
+                  <option value="Year 11">Year 11</option>
                 </select>
               </div>
               <div class="col-md-6">
@@ -93,11 +100,9 @@ document.getElementById('youtubeForm').addEventListener('submit', async (e) => {
     if (!response.ok) throw new Error(await response.text());
     const data = await response.json();
     
-    // Update the preview area with the generated summary
-    document.getElementById('previewArea').innerHTML =
-      `<h4>${data.summary.split('\n')[0]}</h4>` +
-      `<ul>${data.summary.split('\n').slice(1).map(line => `<li>${line.replace('- ', '')}</li>`).join('')}</ul>`;
-      
+    // Display the summary in a simple paragraph.
+    document.getElementById('previewArea').innerHTML = `<p>${data.summary}</p>`;
+    
     document.getElementById('resultsSection').classList.remove('d-none');
     window.scrollTo({ top: document.getElementById('resultsSection').offsetTop, behavior: 'smooth' });
   } catch (error) {
