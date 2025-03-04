@@ -27,6 +27,7 @@ from rq.job import Job
 
 import openai  # Use the main openai module
 logger.info("OpenAI version: %s", openai.__version__)
+from openai.api_resources import ChatCompletion  # <-- Updated import
 
 # Local modules
 from youtube_transcript import get_transcript
@@ -54,12 +55,10 @@ app.config.update(
 # Apply ProxyFix so that request.is_secure is determined correctly when behind a proxy
 app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_port=1, x_prefix=1)
 
-# Allowed domains for podcast sources (added www variants)
+# Allowed domains for podcast sources
 ALLOWED_DOMAINS = {
     'youtube.com',
-    'www.youtube.com',
     'youtu.be',
-    'www.youtu.be',
     'soundcloud.com',
     'spoty.com',
     'your-school-domain.edu'  # Add institutional domains as needed
@@ -177,7 +176,7 @@ def ideas():
                 "Format as numbered items with clear sections.\n"
                 f"Additional requirements: {additional if additional else 'None'}"
             )
-            response = openai.ChatCompletion.create(
+            response = ChatCompletion.create(
                 model="gpt-3.5-turbo",
                 messages=[
                     {"role": "system", "content": "You are an assistant that generates creative classroom activities."},
@@ -234,12 +233,7 @@ def podcast_status(job_id):
 
 @app.route('/dashboard')
 def dashboard():
-    # Provide some dummy usage statistics for Chart.js
-    usage_stats = {
-        "labels": ["January", "February", "March", "April"],
-        "data": [15, 20, 25, 18]
-    }
-    return render_template('dashboard.html', current_year=datetime.now().year, recent_activities=[], usage_stats=usage_stats)
+    return render_template('dashboard.html', current_year=datetime.now().year, recent_activities=[])
 
 @app.route('/privacy')
 def privacy_policy():
@@ -249,7 +243,7 @@ def privacy_policy():
 def terms():
     return render_template("terms.html")
 
-# >>> CHANGED HERE: Renamed the function from "convert_text_route" to "convert_text"
+# UPDATED: Renamed route function to 'convert_text' to match url_for() references in templates.
 @app.route('/convert_text', methods=['GET', 'POST'])
 def convert_text():
     if request.method == 'POST':
@@ -264,7 +258,7 @@ def convert_text():
         )
         
         try:
-            response = openai.ChatCompletion.create(
+            response = ChatCompletion.create(
                 model="gpt-3.5-turbo",
                 messages=[
                     {"role": "system", "content": "You are a text simplification assistant."},
